@@ -18,7 +18,7 @@ struct SettingsView: View {
                     Text(level.title).tag(level)
                 }
             }
-            .pickerStyle(.radioGroup)
+            .pickerStyle(.segmented)
 
             Text("How fast the computer moves and how quickly it reacts. Changes apply right away.")
                 .font(.callout)
