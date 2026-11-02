@@ -58,14 +58,14 @@ final class NotchPanelController: NSObject {
         }
     }
 
-    /// "Play Pong" from the menu bar: works with or without a notch, opens straight to the largest size.
+    /// "play" from the menu bar: works with or without a notch, opens straight to the size chosen in Settings.
     func playFromMenu() {
         guard state.phase == .closed else { return }
         if notch == nil { place(under: virtualGeometry()) }
         guard anchor != nil else { return }
         wasOpenBeforeDrag = false
         state.startNewMatch()
-        settle(.open(PullSizing.bodySize(forPull: PullSizing.maxBodyHeight)))
+        settle(.open(PullSizing.bodySize(forPull: PanelSize.saved.bodyHeight)))
     }
 
     func close() {

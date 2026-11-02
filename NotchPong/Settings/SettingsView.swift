@@ -12,6 +12,8 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
     @AppStorage(GutterSize.storageKey) private var gutter = GutterSize.standard
+    @AppStorage(PanelSize.storageKey) private var panelSize = PanelSize.standard
+    @State private var launchesAtLogin = LoginItem.isEnabled
 
     var body: some View {
         Form {
@@ -33,6 +35,26 @@ struct SettingsView: View {
                 Text("how far you can stray before the game pauses")
             }
             .pickerStyle(.segmented)
+
+            Picker(selection: $panelSize) {
+                ForEach(PanelSize.allCases) { size in
+                    Text(size.title).tag(size)
+                }
+            } label: {
+                Text("panel size")
+                Text("how big \"play\" opens the game")
+            }
+            .pickerStyle(.segmented)
+
+            Toggle(isOn: $launchesAtLogin) {
+                Text("launch at login")
+                Text("keep the drop ready under the notch")
+            }
+            .onChange(of: launchesAtLogin) { _, enabled in
+                LoginItem.setEnabled(enabled)
+                // Show what macOS actually did, in case it refused.
+                launchesAtLogin = LoginItem.isEnabled
+            }
         }
         .formStyle(.grouped)
         .frame(width: 460)
