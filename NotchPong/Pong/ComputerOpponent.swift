@@ -1,0 +1,37 @@
+//
+//  ComputerOpponent.swift
+//  NotchPong
+//
+//  Created by Filippo Cilia on 11/2/26.
+//
+
+import CoreGraphics
+import Foundation
+
+/// Moves the left paddle toward where the ball was a moment ago, at a capped speed, so it can be beaten.
+nonisolated struct ComputerOpponent {
+    var maxSpeed: CGFloat = 0.75
+    var reactionDelay: TimeInterval = 0.12
+    /// Doesn't twitch for differences smaller than this.
+    var deadZone: CGFloat = 0.02
+
+    private var elapsed: TimeInterval = 0
+    private var sightings: [(time: TimeInterval, height: CGFloat)] = []
+
+    mutating func nextPaddleY(current: CGFloat, ball: Ball, interval: TimeInterval) -> CGFloat {
+        elapsed += interval
+        sightings.append((elapsed, ball.position.y))
+        // React to the newest sighting at least `reactionDelay` old, or the oldest one while none is that old.
+        let cutoff = elapsed - reactionDelay
+        let seenIndex = sightings.lastIndex { $0.time <= cutoff } ?? 0
+        let seenHeight = sightings[seenIndex].height
+        sightings.removeFirst(seenIndex)
+
+        let target = ball.velocity.dx < 0 ? seenHeight : PongModel.courtSize.height / 2
+        let distance = target - current
+        let half = PongModel.paddleHeight / 2
+        guard abs(distance) > deadZone else { return min(max(current, half), PongModel.courtSize.height - half) }
+        let move = min(max(distance, -maxSpeed * interval), maxSpeed * interval)
+        return min(max(current + move, half), PongModel.courtSize.height - half)
+    }
+}
