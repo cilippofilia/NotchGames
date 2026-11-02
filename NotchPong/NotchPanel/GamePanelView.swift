@@ -35,7 +35,7 @@ struct GamePanelView: View {
         .overlay {
             // Inner glow fading out toward the top, so the edge against the notch stays dark.
             Group {
-                shape.stroke(Palette.paddle.opacity(0.6), lineWidth: 3).blur(radius: 4)
+                shape.stroke(Palette.paddle.opacity(0.6), lineWidth: 2).blur(radius: 1.5)
                 shape.stroke(Palette.paddle.opacity(0.33), lineWidth: 1)
             }
             .mask(LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.1)))
