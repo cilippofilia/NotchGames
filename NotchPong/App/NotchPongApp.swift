@@ -13,7 +13,7 @@ struct NotchPongApp: App {
 
     var body: some Scene {
         MenuBarExtra("notchpong", systemImage: "gamecontroller") {
-            Button("play pong") { appDelegate.controller?.playFromMenu() }
+            Button("play") { appDelegate.controller?.playFromMenu() }
             SettingsMenuButton()
             Divider()
             Button("quit notchpong") { NSApplication.shared.terminate(nil) }
