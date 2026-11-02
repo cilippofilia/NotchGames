@@ -26,6 +26,9 @@ final class NotchPanel: NSPanel {
         appearance = NSAppearance(named: .darkAqua)
     }
 
+    /// Set while the game is open, so the panel only takes the keyboard when there's a game to play.
+    var acceptsKeyboard = false
+
     // Lets the game take arrow keys without activating the app.
-    override var canBecomeKey: Bool { true }
+    override var canBecomeKey: Bool { acceptsKeyboard }
 }

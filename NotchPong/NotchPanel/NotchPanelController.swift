@@ -51,7 +51,7 @@ final class NotchPanelController: NSObject {
             )
             for await _ in changes {
                 guard let self else { return }
-                self.state.phase = .closed
+                self.resetToClosed()
                 self.place(under: self.notchedScreenGeometry())
             }
         }
@@ -63,6 +63,7 @@ final class NotchPanelController: NSObject {
         if notch == nil { place(under: virtualGeometry()) }
         guard anchor != nil else { return }
         wasOpenBeforeDrag = false
+        state.startNewMatch()
         settle(.open(PullSizing.bodySize(forPull: PullSizing.maxBodyHeight)))
     }
 
@@ -122,7 +123,12 @@ final class NotchPanelController: NSObject {
         updatePanelPointer(location, in: anchor)
 
         // Catch clicks only on the drop itself, so the overlay never blocks the apps underneath.
-        let ignoresMouse = state.phase != .dragging && !dropRect(in: anchor).contains(location)
+        let ignoresMouse = !OverlayHitTest.catchesClicks(
+            at: location,
+            phase: state.phase,
+            dropRect: dropRect(in: anchor),
+            grabZone: grabZone(in: anchor)
+        )
         if overlay?.ignoresMouseEvents != ignoresMouse { overlay?.ignoresMouseEvents = ignoresMouse }
         setActive(state.phase != .closed || state.tear.length > 0 || !spring.isSettled || sample.isPressed)
     }
@@ -138,6 +144,8 @@ final class NotchPanelController: NSObject {
 
     private func updatePull(_ pull: CGFloat) {
         if state.phase != .dragging { wasOpenBeforeDrag = state.phase == .open }
+        // Reset the game as the pull begins, so the last match never shows while the panel grows.
+        if state.phase == .closed { state.startNewMatch() }
         state.phase = .dragging
         state.bodySize = PullSizing.bodySize(forPull: pull)
         // Soft enough to lag and stretch behind the pointer like liquid, damped enough not to wobble.
@@ -149,20 +157,34 @@ final class NotchPanelController: NSObject {
     private func settle(_ outcome: ReleaseOutcome) {
         switch outcome {
         case .open(let size):
-            if !wasOpenBeforeDrag { state.startNewMatch() }
             state.bodySize = size
             state.phase = .open
             // Loose enough to overshoot and wobble like a drop before settling.
             spring.stiffness = 220
             spring.dampingRatio = 0.5
             spring.target = size.height
+            overlay?.acceptsKeyboard = true
             overlay?.makeKey()
         case .close:
             state.phase = .closed
             state.bodySize = .zero
+            // Hand the keyboard back, so typing after a game goes where the user expects.
+            overlay?.acceptsKeyboard = false
+            overlay?.resignKey()
             spring.stiffness = 300
             spring.dampingRatio = 0.75
         }
+    }
+
+    /// Drops any pull in progress and shuts the panel without animating, e.g. when the displays change.
+    private func resetToClosed() {
+        tracker = PullTracker()
+        state.phase = .closed
+        state.bodySize = .zero
+        spring.value = 0
+        spring.velocity = 0
+        overlay?.acceptsKeyboard = false
+        overlay?.resignKey()
     }
 
     // MARK: - Geometry
