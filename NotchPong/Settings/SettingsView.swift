@@ -7,12 +7,20 @@
 
 import SwiftUI
 
-/// The app's Settings window: for now, how hard the computer plays.
+/// The app's Settings window: which game to play and how hard the computer plays.
 struct SettingsView: View {
+    @AppStorage(GameKind.storageKey) private var game = GameKind.standard
     @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
 
     var body: some View {
         Form {
+            Picker("Game", selection: $game) {
+                ForEach(GameKind.allCases) { kind in
+                    Text(kind.title).tag(kind)
+                }
+            }
+            .pickerStyle(.menu)
+
             Picker("Difficulty", selection: $difficulty) {
                 ForEach(Difficulty.allCases) { level in
                     Text(level.title).tag(level)
