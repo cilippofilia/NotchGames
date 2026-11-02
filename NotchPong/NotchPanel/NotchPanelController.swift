@@ -36,8 +36,9 @@ final class NotchPanelController: NSObject {
     private static let virtualNeckWidth: CGFloat = 190
     /// The drop has to be at least this long before it can be grabbed.
     private static let minGrabLength: CGFloat = 10
-    /// Tall enough for the panel at full stretch plus spring overshoot.
+    /// Tall enough for the panel at full stretch plus spring overshoot, and the gutter below it.
     private static let overlayHeight: CGFloat = (PullSizing.maxBodyHeight + PullSizing.maxStretch) * 1.2
+        + PanelPointer.gutter
 
     init(state: PanelState) {
         self.state = state
@@ -252,7 +253,8 @@ final class NotchPanelController: NSObject {
         state.notchWidth = geometry.notchRect.width
         state.hasNotch = notch != nil
         let panel = overlay ?? makeOverlay()
-        let width = DropGeometry.width(forLength: Self.overlayHeight)
+        let width = DropGeometry.width(forLength: PullSizing.maxBodyHeight + PullSizing.maxStretch) * 1.2
+            + 2 * PanelPointer.gutter
         panel.setFrame(
             CGRect(
                 x: geometry.notchRect.midX - width / 2,

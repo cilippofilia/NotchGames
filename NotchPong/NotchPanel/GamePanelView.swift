@@ -52,6 +52,27 @@ struct GamePanelView: View {
             .opacity(solidity)
         }
         .clipShape(shape)
+        .background {
+            // The faint outline of the gutter, where the pointer can roam without pausing the game.
+            UnevenRoundedRectangle(
+                bottomLeadingRadius: DropGeometry.cornerRadius + PanelPointer.gutter,
+                bottomTrailingRadius: DropGeometry.cornerRadius + PanelPointer.gutter,
+                style: .continuous
+            )
+            .stroke(Palette.paddle.opacity(0.18), style: StrokeStyle(lineWidth: 1, dash: [4, 6]))
+            .background(
+                UnevenRoundedRectangle(
+                    bottomLeadingRadius: DropGeometry.cornerRadius + PanelPointer.gutter,
+                    bottomTrailingRadius: DropGeometry.cornerRadius + PanelPointer.gutter,
+                    style: .continuous
+                )
+                .fill(Palette.paddle.opacity(0.03))
+            )
+            .padding(.horizontal, -PanelPointer.gutter)
+            .padding(.bottom, -PanelPointer.gutter)
+            .opacity(solidity)
+            .allowsHitTesting(false)
+        }
         .padding(.top, DropGeometry.notchCapHeight)
         .background(alignment: .top) {
             if state.hasNotch, length > 0 {

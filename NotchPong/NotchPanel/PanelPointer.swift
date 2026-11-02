@@ -11,7 +11,7 @@ import CoreGraphics
 nonisolated enum PanelPointer {
     /// Invisible margin around the panel where the pointer still counts, so the game doesn't pause
     /// the moment it slips past the edge.
-    static let gutter: CGFloat = 40
+    static let gutter: CGFloat = 80
 
     /// `location` and `panel` in screen coordinates (y up). Returns panel points from its top-left, or nil when
     /// the pointer is beyond the gutter.

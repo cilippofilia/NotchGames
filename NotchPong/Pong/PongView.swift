@@ -67,7 +67,7 @@ struct PongView: View {
             game.isPaused = true
             return
         }
-        game.setPlayerPaddle(y: CourtLayout.courtY(forPanelY: pointer.y, in: size))
+        game.aimPlayerPaddle(y: CourtLayout.courtY(forPanelY: pointer.y, in: size))
         if game.model.winner == nil { game.isPaused = false }
     }
 

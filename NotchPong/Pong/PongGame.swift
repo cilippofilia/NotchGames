@@ -36,6 +36,11 @@ final class PongGame {
     var opponentSpeed: CGFloat { computer.maxSpeed }
     private var computer = ComputerOpponent()
     @ObservationIgnored private var lastTick: Date?
+    /// Where the player last aimed while the paddles were frozen; applied when play starts.
+    @ObservationIgnored private var pendingAim: CGFloat?
+
+    /// Paddles only move while the ball is in play: not while paused or counting down.
+    var paddlesCanMove: Bool { !isPaused && countdown <= 0 }
 
     init(model: PongModel = PongModel()) {
         self.model = model
@@ -48,6 +53,7 @@ final class PongGame {
         countdown = 0
         lastPoint = nil
         lastTick = nil
+        pendingAim = nil
     }
 
     func tick(now: Date) {
@@ -63,11 +69,15 @@ final class PongGame {
         self.lastTick = now
         let elapsed = now.timeIntervalSince(lastTick)
         let interval = min(elapsed, PongModel.maxStep)
-        model.computerY = computer.nextPaddleY(current: model.computerY, ball: model.ball, interval: interval)
         guard countdown <= 0 else {
             countdown = max(countdown - elapsed, 0)
+            if countdown <= 0, let pendingAim {
+                setPlayerPaddle(y: pendingAim)
+                self.pendingAim = nil
+            }
             return
         }
+        model.computerY = computer.nextPaddleY(current: model.computerY, ball: model.ball, interval: interval)
         let playerScoreBefore = model.playerScore
         let computerScoreBefore = model.computerScore
         let ballBefore = model.ball.position
@@ -90,6 +100,15 @@ final class PongGame {
     }
 
     func nudgePlayerPaddle(by delta: CGFloat) {
-        setPlayerPaddle(y: model.playerY + delta)
+        aimPlayerPaddle(y: (pendingAim ?? model.playerY) + delta)
+    }
+
+    /// Player input: moves the paddle during play, or remembers the aim for when play starts.
+    func aimPlayerPaddle(y height: CGFloat) {
+        if paddlesCanMove {
+            setPlayerPaddle(y: height)
+        } else {
+            pendingAim = height
+        }
     }
 }

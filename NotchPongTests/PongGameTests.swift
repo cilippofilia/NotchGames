@@ -113,4 +113,42 @@ struct PongGameTests {
             #expect(PixelFont.glyphs[digit] != nil)
         }
     }
+
+    @Test func paddlesHoldStillDuringTheCountdown() {
+        let game = PongGame()
+        game.isPaused = false
+        let computerStart = game.model.computerY
+        let now = Date.now
+        game.tick(now: now)
+        game.aimPlayerPaddle(y: 0.8)
+        game.tick(now: now.addingTimeInterval(1))
+        #expect(game.model.computerY == computerStart)
+        #expect(game.model.playerY == 0.5)
+    }
+
+    @Test func pausedPaddleIgnoresAiming() {
+        let game = PongGame()
+        game.aimPlayerPaddle(y: 0.8)
+        #expect(game.model.playerY == 0.5)
+    }
+
+    @Test func paddleJumpsToTheLastAimWhenPlayStarts() {
+        let game = PongGame()
+        game.isPaused = false
+        let now = Date.now
+        game.tick(now: now)
+        game.aimPlayerPaddle(y: 0.8)
+        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.1))
+        #expect(game.model.playerY == 0.8)
+    }
+
+    @Test func paddleFollowsAimDuringPlay() {
+        let game = PongGame()
+        game.isPaused = false
+        let now = Date.now
+        game.tick(now: now)
+        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.1))
+        game.aimPlayerPaddle(y: 0.3)
+        #expect(game.model.playerY == 0.3)
+    }
 }
