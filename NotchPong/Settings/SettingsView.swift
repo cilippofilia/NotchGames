@@ -22,7 +22,7 @@ struct SettingsView: View {
                 }
             } label: {
                 Text("difficulty")
-                Text("how fast the computer moves and how quickly it reacts. changes apply right away.")
+                Text("how fast and sharp the computer plays")
             }
             .pickerStyle(.segmented)
 
@@ -32,12 +32,12 @@ struct SettingsView: View {
                 }
             } label: {
                 Text("gutter")
-                Text("how far the pointer can leave the game before it pauses.")
+                Text("how far you can stray before the game pauses")
             }
             .pickerStyle(.segmented)
         }
         .formStyle(.grouped)
-        .frame(minWidth: 360)
+        .frame(width: 460)
         .fixedSize()
     }
 }
