@@ -12,6 +12,8 @@ struct GamePanelView: View {
     let state: PanelState
     let onClose: () -> Void
 
+    @AppStorage(GutterSize.storageKey) private var gutter = GutterSize.standard
+
     var body: some View {
         let length = state.hangingLength
         let notchWidth = state.notchWidth
@@ -53,23 +55,15 @@ struct GamePanelView: View {
         }
         .clipShape(shape)
         .background {
-            // The faint outline of the gutter, where the pointer can roam without pausing the game.
+            // The faint dashed edge of the gutter, where the pointer can roam without pausing the game.
             UnevenRoundedRectangle(
-                bottomLeadingRadius: DropGeometry.cornerRadius + PanelPointer.gutter,
-                bottomTrailingRadius: DropGeometry.cornerRadius + PanelPointer.gutter,
+                bottomLeadingRadius: DropGeometry.cornerRadius + gutter.points,
+                bottomTrailingRadius: DropGeometry.cornerRadius + gutter.points,
                 style: .continuous
             )
-            .stroke(Palette.paddle.opacity(0.18), style: StrokeStyle(lineWidth: 1, dash: [4, 6]))
-            .background(
-                UnevenRoundedRectangle(
-                    bottomLeadingRadius: DropGeometry.cornerRadius + PanelPointer.gutter,
-                    bottomTrailingRadius: DropGeometry.cornerRadius + PanelPointer.gutter,
-                    style: .continuous
-                )
-                .fill(Palette.paddle.opacity(0.03))
-            )
-            .padding(.horizontal, -PanelPointer.gutter)
-            .padding(.bottom, -PanelPointer.gutter)
+            .stroke(Palette.paddle.opacity(0.1), style: StrokeStyle(lineWidth: 1, dash: [4, 6]))
+            .padding(.horizontal, -gutter.points)
+            .padding(.bottom, -gutter.points)
             .opacity(solidity)
             .allowsHitTesting(false)
         }

@@ -38,7 +38,7 @@ final class NotchPanelController: NSObject {
     private static let minGrabLength: CGFloat = 10
     /// Tall enough for the panel at full stretch plus spring overshoot, and the gutter below it.
     private static let overlayHeight: CGFloat = (PullSizing.maxBodyHeight + PullSizing.maxStretch) * 1.2
-        + PanelPointer.gutter
+        + GutterSize.largest.points
 
     init(state: PanelState) {
         self.state = state
@@ -136,7 +136,11 @@ final class NotchPanelController: NSObject {
 
     /// Tells the game where the pointer is inside the open panel, in panel points from its top-left.
     private func updatePanelPointer(_ location: CGPoint, in geometry: NotchGeometry) {
-        let pointer = state.phase == .open ? PanelPointer.position(of: location, in: dropRect(in: geometry)) : nil
+        let pointer = state.phase == .open ? PanelPointer.position(
+            of: location,
+            in: dropRect(in: geometry),
+            gutter: GutterSize.saved.points
+        ) : nil
         if state.panelPointer != pointer { state.panelPointer = pointer }
     }
 
@@ -254,7 +258,7 @@ final class NotchPanelController: NSObject {
         state.hasNotch = notch != nil
         let panel = overlay ?? makeOverlay()
         let width = DropGeometry.width(forLength: PullSizing.maxBodyHeight + PullSizing.maxStretch) * 1.2
-            + 2 * PanelPointer.gutter
+            + 2 * GutterSize.largest.points
         panel.setFrame(
             CGRect(
                 x: geometry.notchRect.midX - width / 2,

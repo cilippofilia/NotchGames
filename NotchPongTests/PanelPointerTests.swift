@@ -14,16 +14,25 @@ struct PanelPointerTests {
     private let panel = CGRect(x: 100, y: 650, width: 400, height: 250)
 
     @Test func insideThePanelIsMeasuredFromItsTopLeft() {
-        #expect(PanelPointer.position(of: CGPoint(x: 150, y: 880), in: panel) == CGPoint(x: 50, y: 20))
+        let position = PanelPointer.position(of: CGPoint(x: 150, y: 880), in: panel, gutter: 80)
+        #expect(position == CGPoint(x: 50, y: 20))
     }
 
-    @Test func justOutsideTheEdgeStillCounts() {
-        let point = CGPoint(x: 100 - PanelPointer.gutter + 1, y: 700)
-        #expect(PanelPointer.position(of: point, in: panel) != nil)
+    @Test(arguments: GutterSize.allCases)
+    func justInsideTheGutterStillCounts(size: GutterSize) {
+        let point = CGPoint(x: 100 - size.points + 1, y: 700)
+        #expect(PanelPointer.position(of: point, in: panel, gutter: size.points) != nil)
     }
 
-    @Test func wellOutsideTheGutterPauses() {
-        let point = CGPoint(x: 100 - PanelPointer.gutter - 1, y: 700)
-        #expect(PanelPointer.position(of: point, in: panel) == nil)
+    @Test(arguments: GutterSize.allCases)
+    func beyondTheGutterPauses(size: GutterSize) {
+        let point = CGPoint(x: 100 - size.points - 1, y: 700)
+        #expect(PanelPointer.position(of: point, in: panel, gutter: size.points) == nil)
+    }
+
+    @Test func mediumIsTheDefaultAt80Points() {
+        #expect(GutterSize.standard == .medium)
+        #expect(GutterSize.medium.points == 80)
+        #expect(GutterSize.largest.points == GutterSize.allCases.map(\.points).max())
     }
 }
