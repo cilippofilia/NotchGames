@@ -12,7 +12,7 @@ struct NotchPongApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("notchpong", systemImage: "gamecontroller") {
+        MenuBarExtra("notchpong", systemImage: "arcade.stick.console.fill") {
             Button("play") { appDelegate.controller?.playFromMenu() }
             SettingsMenuButton()
             Divider()
