@@ -101,7 +101,11 @@ final class NotchPanelController {
         let notchBottom = CGPoint(x: geometry.notchRect.midX, y: geometry.notchRect.minY)
 
         if state.phase == .closed, notch != nil {
-            state.tear = Magnet.tear(pointer: location, notchBottomCenter: notchBottom)
+            state.tear = Magnet.tear(
+                pointer: location,
+                notchBottomCenter: notchBottom,
+                maxShift: geometry.notchRect.width / 2 - TearShape.topWidth / 2
+            )
         }
 
         let zone = grabZone(in: geometry)
