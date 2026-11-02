@@ -117,7 +117,7 @@ final class NotchPanelController {
             state.tear = Magnet.tear(
                 pointer: location,
                 notchBottomCenter: notchBottom,
-                maxShift: geometry.notchRect.width / 2 - LiquidProfile.dripHalfWidth - LiquidProfile.maxFlare
+                maxShift: Magnet.maxShift(notchWidth: geometry.notchRect.width)
             )
         }
 

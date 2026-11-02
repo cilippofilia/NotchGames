@@ -45,4 +45,15 @@ struct MagnetTests {
         #expect(tear(at: CGPoint(x: 900, y: 940)).offsetX == maxShift)
         #expect(tear(at: CGPoint(x: 600, y: 940)).offsetX == -maxShift)
     }
+
+    @Test func dropStaysClearOfNotchCorners() {
+        let notchWidth: CGFloat = 190
+        let shift = Magnet.maxShift(notchWidth: notchWidth)
+        let footprint = LiquidProfile.dripHalfWidth + LiquidProfile.maxFlare
+        #expect(shift + footprint <= notchWidth / 2 - Magnet.cornerInset)
+    }
+
+    @Test func narrowNotchKeepsDropCentered() {
+        #expect(Magnet.maxShift(notchWidth: 60) == 0)
+    }
 }

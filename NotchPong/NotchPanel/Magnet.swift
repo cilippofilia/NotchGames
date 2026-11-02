@@ -12,6 +12,13 @@ import CoreGraphics
 nonisolated enum Magnet {
     static let radius: CGFloat = 180
     static let maxLength: CGFloat = 40
+    /// Room left clear at each end of the notch, where its bottom corners curve away.
+    static let cornerInset: CGFloat = 20
+
+    /// How far from the notch's center the drop may slide, so it never reaches the rounded corners.
+    static func maxShift(notchWidth: CGFloat) -> CGFloat {
+        max(notchWidth / 2 - cornerInset - LiquidProfile.dripHalfWidth - LiquidProfile.maxFlare, 0)
+    }
 
     /// Points in screen coordinates (AppKit, y up). `maxShift` keeps the drop under the notch.
     static func tear(pointer: CGPoint, notchBottomCenter: CGPoint, maxShift: CGFloat) -> TearPose {
