@@ -1,3 +1,10 @@
+//
+//  NotchGeometry.swift
+//  NotchPong
+//
+//  Created by Filippo Cilia on 11/2/26.
+//
+
 import AppKit
 
 /// Where the notch sits on a screen, in AppKit screen coordinates (origin bottom-left).

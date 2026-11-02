@@ -1,3 +1,10 @@
+//
+//  Palette.swift
+//  NotchPong
+//
+//  Created by Filippo Cilia on 11/2/26.
+//
+
 import SwiftUI
 
 /// The neon look from the design: near-black panel, teal paddles, pink ball.

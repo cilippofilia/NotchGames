@@ -1,3 +1,10 @@
+//
+//  PullSizing.swift
+//  NotchPong
+//
+//  Created by Filippo Cilia on 11/2/26.
+//
+
 import CoreGraphics
 
 /// What happens when the user lets go of the panel.
