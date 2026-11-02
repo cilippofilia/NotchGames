@@ -7,18 +7,19 @@
 
 import SwiftUI
 
-/// The neon panel: neck in the menu bar, court below, and a handle to push it back up.
+/// The drop hanging from the notch, which grows into the neon panel with a handle to push it back up.
 struct GamePanelView: View {
     let state: PanelState
     let onClose: () -> Void
 
     var body: some View {
+        let length = state.hangingLength
         let shape = UnevenRoundedRectangle(
             bottomLeadingRadius: DropGeometry.cornerRadius,
             bottomTrailingRadius: DropGeometry.cornerRadius
         )
         // Neon and controls fade in as the drip turns into the panel.
-        let solidity = DropGeometry.solidity(forLength: state.hangingLength)
+        let solidity = DropGeometry.solidity(forLength: length)
 
         VStack(spacing: 0) {
             Color.clear
@@ -32,6 +33,7 @@ struct GamePanelView: View {
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAction { onClose() }
         }
+        .frame(width: DropGeometry.width(forLength: length), height: length)
         .background(shape.fill(Palette.background))
         .overlay {
             // Inner glow on the sides and bottom only; the top edge against the notch stays dark.
@@ -43,5 +45,7 @@ struct GamePanelView: View {
             .opacity(solidity)
         }
         .clipShape(shape)
+        .offset(x: DropGeometry.offset(forLength: length, dropOffset: state.dropOffset))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }

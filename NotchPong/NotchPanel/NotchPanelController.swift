@@ -8,56 +8,51 @@
 import AppKit
 import SwiftUI
 
-/// Owns the drop under the notch and the game panel that grows out of it.
+/// Owns the overlay under the notch, where the drop hangs and grows into the game panel.
 ///
-/// The pointer is polled with `NSEvent.mouseLocation` and `NSEvent.pressedMouseButtons`, which need no permissions
-/// and work in the sandbox. Polling is slow while the pointer is far from the notch and fast while it's close.
-final class NotchPanelController {
+/// The overlay is one fixed, transparent window; SwiftUI draws the drop inside it, so nothing is resized per frame.
+/// Every display frame the pointer is read with `NSEvent.mouseLocation` and `NSEvent.pressedMouseButtons`
+/// (no permissions, sandbox-safe) and a spring moves the drop. The frame rate drops to 10 Hz while idle.
+final class NotchPanelController: NSObject {
     /// The grab area around the handle at the bottom of the open panel.
     static let handleSize = CGSize(width: 90, height: 24)
 
     private let state: PanelState
-    private var tearPanel: NotchPanel?
-    private var gamePanel: NotchPanel?
+    private var overlay: NotchPanel?
+    private var displayLink: CADisplayLink?
     /// The notch on the built-in screen, if there is one.
     private var notch: NotchGeometry?
-    /// The notch (real, or a virtual one on screens without a notch) the open game panel hangs from.
+    /// The notch (real, or a virtual one on screens without a notch) the overlay hangs from.
     private var anchor: NotchGeometry?
     private var tracker = PullTracker()
     private var wasOpenBeforeDrag = false
-    /// Drives the panel's body height so it trails the pointer, overshoots when it opens and springs back shut.
-    /// Measured as how far the liquid hangs below the notch.
-    private var heightSpring = Spring(stiffness: 220, dampingRatio: 0.5)
-    private var lastSpringTime: TimeInterval?
-    private var pointerLoop: Task<Void, Never>?
+    /// How far the drop hangs below the notch.
+    private var spring = Spring(stiffness: 400, dampingRatio: 0.45)
+    private var lastStepTime: CFTimeInterval?
+    private var isActive = false
     private var screenObserver: Task<Void, Never>?
 
     /// Width of the virtual neck on Macs without a notch.
     private static let virtualNeckWidth: CGFloat = 190
-    private static let tearPanelHeight: CGFloat = 60
     /// The drop has to be at least this long before it can be grabbed.
     private static let minGrabLength: CGFloat = 10
-    private static let fastPoll = Duration.milliseconds(16)
-    private static let slowPoll = Duration.milliseconds(100)
+    /// Tall enough for the panel at full stretch plus spring overshoot.
+    private static let overlayHeight: CGFloat = (PullSizing.maxBodyHeight + PullSizing.maxStretch) * 1.2
 
     init(state: PanelState) {
         self.state = state
     }
 
     func start() {
-        placeTear()
+        place(under: notchedScreenGeometry())
         screenObserver = Task { [weak self] in
             let changes = NotificationCenter.default.notifications(
                 named: NSApplication.didChangeScreenParametersNotification
             )
             for await _ in changes {
-                self?.placeTear()
-            }
-        }
-        pointerLoop = Task { [weak self] in
-            while !Task.isCancelled {
-                guard let interval = self?.pollPointer() else { return }
-                try? await Task.sleep(for: interval)
+                guard let self else { return }
+                self.state.phase = .closed
+                self.place(under: self.notchedScreenGeometry())
             }
         }
     }
@@ -65,81 +60,112 @@ final class NotchPanelController {
     /// "Play Pong" from the menu bar: works with or without a notch, opens straight to the largest size.
     func playFromMenu() {
         guard state.phase == .closed else { return }
-        guard let geometry = notch ?? virtualGeometry() else { return }
-        anchor = geometry
+        if notch == nil { place(under: virtualGeometry()) }
+        guard anchor != nil else { return }
         wasOpenBeforeDrag = false
-        state.dropOffset = 0
-        showGamePanel()
         settle(.open(PullSizing.bodySize(forPull: PullSizing.maxBodyHeight)))
     }
 
-    func updatePull(_ pull: CGFloat) {
-        if state.phase != .dragging {
-            wasOpenBeforeDrag = state.phase == .open
-            if state.phase == .closed {
-                anchor = notch
-                // Start from the drip exactly as it hangs now, so grabbing it doesn't jump.
-                heightSpring.value = state.tear.length
-                heightSpring.velocity = 0
-                state.dropOffset = state.tear.offsetX
-            }
-        }
-        guard anchor != nil else { return }
-        state.phase = .dragging
-        state.tear = TearPose(length: 0, offsetX: 0)
-        state.bodySize = PullSizing.bodySize(forPull: pull)
-        // Soft enough to lag and stretch behind the pointer like liquid, damped enough not to wobble.
-        heightSpring.stiffness = 500
-        heightSpring.dampingRatio = 0.75
-        heightSpring.target = PullSizing.rubberBandedHeight(forPull: pull)
-        showGamePanel()
+    func close() {
+        guard state.phase == .open else { return }
+        settle(.close)
     }
 
-    func endPull(pull: CGFloat, upwardVelocity: CGFloat) {
-        guard anchor != nil, state.phase != .closed else { return }
-        settle(PullSizing.releaseOutcome(pull: pull, upwardVelocity: upwardVelocity))
-    }
+    // MARK: - Every frame
 
-    // MARK: - Pointer
-
-    /// Reads the pointer once, updates the drop and any pull, and returns how long to wait before the next read.
-    private func pollPointer() -> Duration {
-        guard let geometry = anchor ?? notch else { return .milliseconds(250) }
+    @objc private func step(_ link: CADisplayLink) {
+        guard let anchor else { return }
+        let elapsed = lastStepTime.map { min(link.timestamp - $0, 0.05) } ?? 0
+        lastStepTime = link.timestamp
         let location = NSEvent.mouseLocation
         let sample = PointerSample(
             location: location,
-            time: ProcessInfo.processInfo.systemUptime,
+            time: link.timestamp,
             isPressed: NSEvent.pressedMouseButtons & 1 != 0
         )
-        let notchBottom = CGPoint(x: geometry.notchRect.midX, y: geometry.notchRect.minY)
 
-        if state.phase == .closed, notch != nil {
-            state.tear = Magnet.tear(
+        if state.phase == .closed {
+            let tear = notch == nil ? TearPose(length: 0, offsetX: 0) : Magnet.tear(
                 pointer: location,
-                notchBottomCenter: notchBottom,
-                maxShift: Magnet.maxShift(notchWidth: geometry.notchRect.width)
+                notchBottomCenter: CGPoint(x: anchor.notchRect.midX, y: anchor.notchRect.minY),
+                maxShift: Magnet.maxShift(notchWidth: anchor.notchRect.width)
             )
+            if state.tear != tear { state.tear = tear }
+            spring.target = tear.length
+            // Once it has sprung back to drip size, let it wobble like a drop again.
+            if spring.value < Magnet.maxLength * 1.5 {
+                spring.stiffness = 400
+                spring.dampingRatio = 0.45
+                if state.dropOffset != tear.offsetX { state.dropOffset = tear.offsetX }
+            }
         }
-
-        let zone = grabZone(in: geometry)
-        // Only catch clicks while the pointer is on the drop, so the drop never blocks the app underneath.
-        tearPanel?.ignoresMouseEvents = !(state.phase == .closed && zone?.contains(location) == true)
 
         let action = tracker.handle(
             sample,
-            grabZone: zone,
-            startPull: state.phase == .open ? state.bodySize.height : state.tear.length,
-            anchorY: geometry.notchRect.minY
+            grabZone: grabZone(in: anchor),
+            startPull: state.phase == .open ? state.bodySize.height : spring.value,
+            anchorY: anchor.notchRect.minY
         )
         switch action {
         case .none: break
         case .pull(let pull): updatePull(pull)
-        case .release(let pull, let velocity): endPull(pull: pull, upwardVelocity: velocity)
+        case .release(let pull, let velocity):
+            settle(PullSizing.releaseOutcome(pull: pull, upwardVelocity: velocity))
         }
-        advanceSpring(now: sample.time)
 
-        let isActive = state.phase != .closed || state.tear.length > 0 || sample.isPressed || !heightSpring.isSettled
-        return isActive ? Self.fastPoll : Self.slowPoll
+        spring.step(by: elapsed)
+        // Observation fires on every write, so only write real changes to avoid redrawing every frame.
+        let length = max(spring.value, 0)
+        if state.hangingLength != length { state.hangingLength = length }
+
+        // Catch clicks only on the drop itself, so the overlay never blocks the apps underneath.
+        let ignoresMouse = state.phase != .dragging && !dropRect(in: anchor).contains(location)
+        if overlay?.ignoresMouseEvents != ignoresMouse { overlay?.ignoresMouseEvents = ignoresMouse }
+        setActive(state.phase != .closed || state.tear.length > 0 || !spring.isSettled || sample.isPressed)
+    }
+
+    private func updatePull(_ pull: CGFloat) {
+        if state.phase != .dragging { wasOpenBeforeDrag = state.phase == .open }
+        state.phase = .dragging
+        state.bodySize = PullSizing.bodySize(forPull: pull)
+        // Soft enough to lag and stretch behind the pointer like liquid, damped enough not to wobble.
+        spring.stiffness = 500
+        spring.dampingRatio = 0.75
+        spring.target = PullSizing.rubberBandedHeight(forPull: pull)
+    }
+
+    private func settle(_ outcome: ReleaseOutcome) {
+        switch outcome {
+        case .open(let size):
+            if !wasOpenBeforeDrag { state.startNewMatch() }
+            state.bodySize = size
+            state.phase = .open
+            // Loose enough to overshoot and wobble like a drop before settling.
+            spring.stiffness = 220
+            spring.dampingRatio = 0.5
+            spring.target = size.height
+            overlay?.makeKey()
+        case .close:
+            state.phase = .closed
+            state.bodySize = .zero
+            spring.stiffness = 300
+            spring.dampingRatio = 0.75
+        }
+    }
+
+    // MARK: - Geometry
+
+    /// The drop as currently drawn, in screen coordinates.
+    private func dropRect(in geometry: NotchGeometry) -> CGRect {
+        let length = state.hangingLength
+        let width = DropGeometry.width(forLength: length)
+        let offset = DropGeometry.offset(forLength: length, dropOffset: state.dropOffset)
+        return CGRect(
+            x: geometry.notchRect.midX + offset - width / 2,
+            y: geometry.notchRect.minY - length,
+            width: width,
+            height: length
+        )
     }
 
     /// Where pressing starts a pull: the notch and the drop while closed, the handle while open.
@@ -147,18 +173,12 @@ final class NotchPanelController {
         switch state.phase {
         case .closed:
             guard notch != nil, state.tear.length >= Self.minGrabLength else { return nil }
-            let tearRect = CGRect(
-                x: geometry.notchRect.midX + state.tear.offsetX - 24,
-                y: geometry.notchRect.minY - state.tear.length - 8,
-                width: 48,
-                height: state.tear.length + 8
-            )
-            return tearRect.union(geometry.notchRect)
+            return dropRect(in: geometry).insetBy(dx: -10, dy: -6).union(geometry.notchRect)
         case .open:
-            guard let frame = gamePanel?.frame else { return nil }
+            let drop = dropRect(in: geometry)
             return CGRect(
-                x: frame.midX - Self.handleSize.width / 2,
-                y: frame.minY,
+                x: drop.midX - Self.handleSize.width / 2,
+                y: drop.minY,
                 width: Self.handleSize.width,
                 height: Self.handleSize.height
             )
@@ -166,8 +186,6 @@ final class NotchPanelController {
             return nil
         }
     }
-
-    // MARK: - Placement
 
     private func notchedScreenGeometry() -> NotchGeometry? {
         NSScreen.screens.lazy.compactMap(NotchGeometry.forScreen).first
@@ -185,119 +203,54 @@ final class NotchPanelController {
         return NotchGeometry(notchRect: rect, menuBarHeight: menuBarHeight)
     }
 
-    private func placeTear() {
-        if state.phase != .closed { closeImmediately() }
+    // MARK: - Overlay window
+
+    /// Puts the overlay under `geometry`, or hides it when there's nothing to hang from.
+    private func place(under geometry: NotchGeometry?) {
         notch = notchedScreenGeometry()
-        guard let notch else {
-            tearPanel?.orderOut(nil)
+        anchor = geometry
+        guard let geometry else {
+            overlay?.orderOut(nil)
+            displayLink?.isPaused = true
             return
         }
-        let panel = tearPanel ?? makeTearPanel()
+        let panel = overlay ?? makeOverlay()
+        let width = DropGeometry.width(forLength: Self.overlayHeight)
         panel.setFrame(
             CGRect(
-                x: notch.notchRect.minX,
-                y: notch.notchRect.minY - Self.tearPanelHeight,
-                width: notch.notchRect.width,
-                height: Self.tearPanelHeight
+                x: geometry.notchRect.midX - width / 2,
+                y: geometry.notchRect.minY - Self.overlayHeight,
+                width: width,
+                height: Self.overlayHeight
             ),
             display: true
         )
         panel.orderFrontRegardless()
+        displayLink?.isPaused = false
     }
 
-    private func makeTearPanel() -> NotchPanel {
+    private func makeOverlay() -> NotchPanel {
         let panel = NotchPanel(contentRect: .zero)
         panel.ignoresMouseEvents = true
-        panel.contentView = NSHostingView(rootView: TearView(state: state))
-        tearPanel = panel
-        return panel
-    }
-
-    private func makeGamePanel() -> NotchPanel {
-        let panel = NotchPanel(contentRect: .zero)
-        let view = GamePanelView(state: state) { [weak self] in
-            self?.endPull(pull: 0, upwardVelocity: 0)
-        }
-        let hostingView = FirstMouseHostingView(rootView: view)
-        // The controller sets the frame; don't let SwiftUI's ideal size fight it.
+        let hostingView = FirstMouseHostingView(rootView: GamePanelView(state: state) { [weak self] in
+            self?.close()
+        })
         hostingView.sizingOptions = []
         panel.contentView = hostingView
-        gamePanel = panel
+        let link = hostingView.displayLink(target: self, selector: #selector(step(_:)))
+        link.add(to: .main, forMode: .common)
+        displayLink = link
+        overlay = panel
+        setActive(false, force: true)
         return panel
     }
 
-    private func frame(forHangingLength length: CGFloat, in geometry: NotchGeometry) -> CGRect {
-        let length = max(length, 0)
-        let width = DropGeometry.width(forLength: length)
-        let offset = DropGeometry.offset(forLength: length, dropOffset: state.dropOffset)
-        // Hangs from the notch's bottom edge; nothing is drawn in the menu bar.
-        return CGRect(
-            x: geometry.notchRect.midX + offset - width / 2,
-            y: geometry.notchRect.minY - length,
-            width: width,
-            height: length
-        )
-    }
-
-    // MARK: - Showing and hiding
-
-    private func showGamePanel() {
-        guard let anchor else { return }
-        let panel = gamePanel ?? makeGamePanel()
-        guard !panel.isVisible else { return }
-        state.hangingLength = max(heightSpring.value, 0)
-        panel.setFrame(frame(forHangingLength: heightSpring.value, in: anchor), display: true)
-        panel.orderFrontRegardless()
-    }
-
-    private func settle(_ outcome: ReleaseOutcome) {
-        guard let panel = gamePanel else { return }
-        switch outcome {
-        case .open(let size):
-            if !wasOpenBeforeDrag { state.startNewMatch() }
-            state.bodySize = size
-            state.phase = .open
-            // Loose enough to overshoot and wobble like a drop before settling.
-            heightSpring.stiffness = 220
-            heightSpring.dampingRatio = 0.5
-            heightSpring.target = size.height
-            panel.makeKey()
-        case .close:
-            state.phase = .closed
-            heightSpring.stiffness = 300
-            heightSpring.dampingRatio = 0.75
-            heightSpring.target = 0
-        }
-    }
-
-    /// Steps the spring and resizes the panel; hides the panel once it has sprung shut.
-    private func advanceSpring(now: TimeInterval) {
-        guard let anchor, let panel = gamePanel, panel.isVisible else {
-            lastSpringTime = nil
-            return
-        }
-        let elapsed = lastSpringTime.map { min(now - $0, 0.05) } ?? 0
-        lastSpringTime = now
-        heightSpring.step(by: elapsed)
-        state.hangingLength = max(heightSpring.value, 0)
-        panel.setFrame(frame(forHangingLength: heightSpring.value, in: anchor), display: true)
-        if state.phase == .closed, heightSpring.value < 1 { finishClosing() }
-    }
-
-    private func closeImmediately() {
-        state.phase = .closed
-        finishClosing()
-    }
-
-    private func finishClosing() {
-        // A new pull may have started during the close animation.
-        guard state.phase == .closed else { return }
-        state.bodySize = .zero
-        state.hangingLength = 0
-        heightSpring.value = 0
-        heightSpring.velocity = 0
-        heightSpring.target = 0
-        anchor = nil
-        gamePanel?.orderOut(nil)
+    /// Full frame rate while something is moving, a slow 10 Hz check otherwise.
+    private func setActive(_ active: Bool, force: Bool = false) {
+        guard active != isActive || force else { return }
+        isActive = active
+        displayLink?.preferredFrameRateRange = active
+            ? CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
+            : CAFrameRateRange(minimum: 10, maximum: 10, preferred: 10)
     }
 }
