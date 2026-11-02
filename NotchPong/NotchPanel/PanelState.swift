@@ -20,6 +20,8 @@ final class PanelState {
     var hangingLength: CGFloat = 0
     var dropOffset: CGFloat = 0
     var notchWidth: CGFloat = 0
+    /// False on Macs without a notch, where there's no notch to join.
+    var hasNotch = false
     /// Changes every time the panel opens, so the game knows to start a fresh match.
     private(set) var matchID = UUID()
 

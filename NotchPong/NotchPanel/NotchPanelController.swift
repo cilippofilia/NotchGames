@@ -219,6 +219,7 @@ final class NotchPanelController: NSObject {
             return
         }
         state.notchWidth = geometry.notchRect.width
+        state.hasNotch = notch != nil
         let panel = overlay ?? makeOverlay()
         let width = DropGeometry.width(forLength: Self.overlayHeight)
         panel.setFrame(
@@ -226,7 +227,7 @@ final class NotchPanelController: NSObject {
                 x: geometry.notchRect.midX - width / 2,
                 y: geometry.notchRect.minY - Self.overlayHeight,
                 width: width,
-                height: Self.overlayHeight
+                height: Self.overlayHeight + DropGeometry.notchCapHeight
             ),
             display: true
         )

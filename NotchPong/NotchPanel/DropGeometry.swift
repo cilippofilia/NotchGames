@@ -17,6 +17,9 @@ nonisolated enum DropGeometry {
     static let cornerRadius: CGFloat = 28
     /// The small curve where a panel wider than the notch leaves it, keeping its top edge tight under the menu bar.
     static let neckRadius: CGFloat = 8
+    /// Black drawn just above the notch's bottom edge, filling the menu bar showing under its rounded corners
+    /// so the notch's sides seem to run straight down into the drop. The rest is hidden behind the notch.
+    static let notchCapHeight: CGFloat = 12
     /// Hanging length, past a full drip, over which the drip becomes the panel.
     private static let morphLength: CGFloat = 200
 
