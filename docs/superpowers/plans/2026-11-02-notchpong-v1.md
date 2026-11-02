@@ -375,3 +375,19 @@ These each get their own spec/plan pass when started. They're listed here so v1 
 2. **Two-player mode:** built locally (second player on W/S), then removed. Multiplayer will instead run between two Macs over the network (MultipeerConnectivity), with its own spec when started.
 3. **Saved scores:** persist wins and losses (and the best streak) with `@AppStorage` or SwiftData, shown in the panel.
 4. **Settings window:** difficulty picker done early (Easy/Moderate/Hard/Expert, Moderate default). Still to add: default panel size, launch at login (`SMAppService`) and the game picker.
+
+---
+
+## v1.2: more games (planned 2026-11-02, not started)
+
+Quick games for the notch: some last a few minutes, some only seconds. Each game has one main input, and the others are extras: keys come first for keyboard games, the pointer for pointer games. Each game is a new `GameKind` case shown by `GameView`, with its own `<Name>Game` (`@MainActor @Observable`) and `<Name>View`, in the same style as Pong and air hockey. They should reuse `MatchClock`, `MatchCountdownView`, `MatchMessageView` and `CourtEffects` where they fit. Each one gets its own spec/plan pass when it's started.
+
+1. **Snake:** arrows or WASD (main input). Lasts a few minutes. Grid-based, and the snake speeds up as it grows. The pointer isn't a priority.
+2. **Brick breaker:** pointer (main input), arrows as extras. Lasts a few minutes. A paddle along the bottom knocks out a wall of bricks. Reuses `Ball`, the swept-collision bounces and the wall sparks. Cheapest to build.
+3. **Runner:** space or up arrow to jump. Lasts seconds to a minute. Obstacles scroll in from the right, the panel's width gives room to react, and one hit ends the run.
+4. **Target tap:** pointer clicks. A 30-second round. Glowing dots pop up and fade, and you click as many as you can.
+
+Open questions for the specs:
+- Records: `PlayerStats` only tracks wins and losses against the computer. These games are score-based, so they probably need a best score per game.
+- Pausing: Pong pauses when the pointer leaves the panel. Keyboard games may want to pause on lost focus instead.
+- Suggested order: Snake, then the runner, then brick breaker, then target tap. That's Claude's call, not yet confirmed.
