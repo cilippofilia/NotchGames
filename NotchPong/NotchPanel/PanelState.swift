@@ -17,6 +17,7 @@ final class PanelState {
     var bodySize: CGSize = .zero
     var neckWidth: CGFloat = 0
     var neckHeight: CGFloat = 0
+    var tear = TearPose(length: 0, offsetX: 0)
     /// Changes every time the panel opens, so the game knows to start a fresh match.
     private(set) var matchID = UUID()
 

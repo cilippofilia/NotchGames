@@ -28,10 +28,12 @@ User decision: these are out of v1 and go in the build plan as a v1.1 section.
 ## Anti-goals
 
 - The panel must never cover menu bar items. Within the menu bar it is exactly as wide as the notch.
-- No Accessibility, Input Monitoring or Screen Recording permissions, and no global mouse monitoring. The app only receives events on its own windows.
+- No Accessibility, Input Monitoring or Screen Recording permissions. (Changed 2026-11-02, user decision: the app polls the pointer position with `NSEvent.mouseLocation`/`pressedMouseButtons` to drive the magnet drop. That needs no permission and works in the sandbox.)
 - No Dock icon or main window that gets in the way.
 
 ## Decided by the user
+
+- **Magnet drop (2026-11-02, replaces the plain drag on the notch, which didn't work):** as the pointer nears the notch, a black tear-shaped drop stretches down from it and leans toward the pointer. Grabbing the drop (or the notch) and pulling down opens the game panel. The panel's neon outline starts on the flat top edge, the neck runs a little below the notch, and every corner uses the same radius.
 
 - **Trigger:** click the notch and drag down. Pulling further makes the panel bigger.
 - **Close:** drag the panel back up into the notch.
