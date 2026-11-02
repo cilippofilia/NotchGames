@@ -27,4 +27,20 @@ struct DropGeometryTests {
         #expect(abs(DropGeometry.width(forLength: 140) - DropGeometry.width(forLength: 140.5)) < 2)
         #expect(DropGeometry.width(forLength: 0) == DropGeometry.dripWidth)
     }
+
+    @Test func dripClingsWithAWiderTop() {
+        #expect(DropGeometry.topWidth(forLength: Magnet.maxLength) == DropGeometry.dripTopWidth)
+        #expect(DropGeometry.frameWidth(forLength: Magnet.maxLength) == DropGeometry.dripTopWidth)
+    }
+
+    @Test func panelTopLeavesRoomForRoundedCorners() {
+        let length = PullSizing.maxBodyHeight
+        let width = DropGeometry.width(forLength: length)
+        #expect(DropGeometry.topWidth(forLength: length) == width - 2 * DropGeometry.cornerRadius)
+        #expect(DropGeometry.frameWidth(forLength: length) == width)
+    }
+
+    @Test func topChangesWithoutJumps() {
+        #expect(abs(DropGeometry.topWidth(forLength: 140) - DropGeometry.topWidth(forLength: 140.5)) < 2)
+    }
 }

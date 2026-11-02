@@ -15,7 +15,7 @@ struct PullSizingTests {
     }
 
     @Test func pullClampsAtMax() {
-        #expect(PullSizing.bodySize(forPull: 900) == CGSize(width: 640, height: 400))
+        #expect(PullSizing.bodySize(forPull: 900) == CGSize(width: 736, height: 460))
     }
 
     @Test func negativePullIsZero() {
@@ -31,7 +31,7 @@ struct PullSizingTests {
     }
 
     @Test func releasePastMaxOpensAtMax() {
-        #expect(PullSizing.releaseOutcome(pull: 700, upwardVelocity: 0) == .open(CGSize(width: 640, height: 400)))
+        #expect(PullSizing.releaseOutcome(pull: 700, upwardVelocity: 0) == .open(CGSize(width: 736, height: 460)))
     }
 
     @Test func upwardFlickClosesEvenWhenLarge() {
@@ -43,12 +43,12 @@ struct PullSizingTests {
     }
 
     @Test func rubberBandStretchesPastMaxWithResistance() {
-        let height = PullSizing.rubberBandedHeight(forPull: 500)
-        #expect(height > 400 && height < 440)
+        let height = PullSizing.rubberBandedHeight(forPull: 560)
+        #expect(height > 460 && height < 500)
     }
 
     @Test func rubberBandStretchIsCapped() {
-        #expect(PullSizing.rubberBandedHeight(forPull: 5000) == 400 + PullSizing.maxStretch)
+        #expect(PullSizing.rubberBandedHeight(forPull: 5000) == 460 + PullSizing.maxStretch)
     }
 
     @Test func rubberBandNeverNegative() {

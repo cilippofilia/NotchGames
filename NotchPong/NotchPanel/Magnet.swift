@@ -17,7 +17,7 @@ nonisolated enum Magnet {
 
     /// How far from the notch's center the drop may slide, so it never reaches the rounded corners.
     static func maxShift(notchWidth: CGFloat) -> CGFloat {
-        max(notchWidth / 2 - cornerInset - DropGeometry.dripWidth / 2, 0)
+        max(notchWidth / 2 - cornerInset - DropGeometry.dripTopWidth / 2, 0)
     }
 
     /// Points in screen coordinates (AppKit, y up). `maxShift` keeps the drop under the notch.

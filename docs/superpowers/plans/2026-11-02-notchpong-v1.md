@@ -18,7 +18,7 @@
 - `LSUIElement = YES` (no Dock icon). `MenuBarExtra` with "Play Pong" and "Quit NotchPong".
 - Panel colors: background `#000000`, paddles `#4dfcc4` with glow, ball `#ff4fa3` with glow, dashed center line, faint teal outline glow, all corners rounded (continuous, 28 pt), handle bar at bottom center.
 - In the menu bar band, the panel is exactly notch-width. It must never cover menu bar items.
-- Size: body min 400×250 pt, max 640×400 pt (court ratio 1.6:1). These are the builder's conversion of the mockup's "short pull" and "medium pull" and are tunable constants.
+- Size: body min 400×250 pt, max 736×460 pt (raised from 640×400 by user request) (court ratio 1.6:1). These are the builder's conversion of the mockup's "short pull" and "medium pull" and are tunable constants.
 - First to 5 points wins. One computer difficulty. No sound.
 - Follow `~/.claude/CLAUDE.md` (`foregroundStyle`, `Button` instead of `onTapGesture`, `Task.sleep(for:)`, one type per file, and so on).
 - SwiftLint is installed at `/opt/homebrew/bin/swiftlint`. `swiftlint` must report no errors before each commit.

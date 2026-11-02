@@ -17,7 +17,7 @@ nonisolated enum ReleaseOutcome: Equatable {
 nonisolated enum PullSizing {
     static let aspect: CGFloat = 1.6
     static let minBodyHeight: CGFloat = 250
-    static let maxBodyHeight: CGFloat = 400
+    static let maxBodyHeight: CGFloat = 460
     /// Upward release speed (pt/s) that counts as a flick to close.
     static let flickVelocity: CGFloat = 800
     /// How far past the maximum the panel can be stretched while dragging.
