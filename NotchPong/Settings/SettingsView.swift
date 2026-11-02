@@ -15,27 +15,26 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Picker("difficulty", selection: $difficulty) {
+            // A second text in the label shows as a grey subtitle under the setting's name, in the same row.
+            Picker(selection: $difficulty) {
                 ForEach(Difficulty.allCases) { level in
                     Text(level.title).tag(level)
                 }
+            } label: {
+                Text("difficulty")
+                Text("how fast the computer moves and how quickly it reacts. changes apply right away.")
             }
             .pickerStyle(.segmented)
 
-            Text("how fast the computer moves and how quickly it reacts. changes apply right away.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-
-            Picker("gutter", selection: $gutter) {
+            Picker(selection: $gutter) {
                 ForEach(GutterSize.allCases) { size in
                     Text(size.title).tag(size)
                 }
+            } label: {
+                Text("gutter")
+                Text("how far the pointer can leave the game before it pauses.")
             }
             .pickerStyle(.segmented)
-
-            Text("how far the pointer can leave the game before it pauses.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
         }
         .formStyle(.grouped)
         .frame(minWidth: 360)
