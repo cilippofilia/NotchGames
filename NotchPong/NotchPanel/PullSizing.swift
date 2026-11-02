@@ -8,13 +8,13 @@
 import CoreGraphics
 
 /// What happens when the user lets go of the panel.
-enum ReleaseOutcome: Equatable {
+nonisolated enum ReleaseOutcome: Equatable {
     case close
     case open(CGSize)
 }
 
 /// Maps how far the panel has been pulled to the size of the game area below the menu bar.
-enum PullSizing {
+nonisolated enum PullSizing {
     static let aspect: CGFloat = 1.6
     static let minBodyHeight: CGFloat = 250
     static let maxBodyHeight: CGFloat = 400

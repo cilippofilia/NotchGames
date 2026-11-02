@@ -12,8 +12,13 @@ struct TearView: View {
     let state: PanelState
 
     var body: some View {
-        TearShape(pose: state.tear)
-            .fill(.black)
+        LiquidShape(
+            length: state.tear.length,
+            dropOffset: state.tear.offsetX,
+            notchWidth: state.neckWidth,
+            neckHeight: 0
+        )
+            .fill(Palette.background)
             .animation(.interpolatingSpring(stiffness: 300, damping: 18), value: state.tear)
             .accessibilityHidden(true)
     }

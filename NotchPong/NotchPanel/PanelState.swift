@@ -18,6 +18,9 @@ final class PanelState {
     var neckWidth: CGFloat = 0
     var neckHeight: CGFloat = 0
     var tear = TearPose(length: 0, offsetX: 0)
+    /// How far the liquid currently hangs below the notch, and where the drip it grew from was.
+    var hangingLength: CGFloat = 0
+    var dropOffset: CGFloat = 0
     /// Changes every time the panel opens, so the game knows to start a fresh match.
     private(set) var matchID = UUID()
 

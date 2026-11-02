@@ -13,12 +13,24 @@ struct GamePanelView: View {
     let onClose: () -> Void
 
     var body: some View {
-        let shape = NotchShape(neckWidth: state.neckWidth, neckHeight: state.neckHeight)
-        let outline = NotchShape(neckWidth: state.neckWidth, neckHeight: state.neckHeight, isOutline: true)
+        let shape = LiquidShape(
+            length: state.hangingLength,
+            dropOffset: state.dropOffset,
+            notchWidth: state.neckWidth,
+            neckHeight: state.neckHeight
+        )
+        var outline = shape
+        outline.isOutline = true
+        // Neon and controls fade in as the drip turns into the panel.
+        let solidity = LiquidProfile.make(
+            length: state.hangingLength,
+            notchWidth: state.neckWidth,
+            dropOffset: state.dropOffset
+        ).solidity
 
-        VStack(spacing: 0) {
+        return VStack(spacing: 0) {
             Color.clear
-                .frame(height: state.neckHeight)
+                .frame(height: state.neckHeight + LiquidProfile.slack)
 
             Color.clear
 
@@ -26,6 +38,7 @@ struct GamePanelView: View {
                 .fill(Palette.paddle.opacity(0.4))
                 .frame(width: 30, height: 4)
                 .frame(width: NotchPanelController.handleSize.width, height: NotchPanelController.handleSize.height)
+                .opacity(solidity)
                 .accessibilityLabel("Close")
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAction { onClose() }
@@ -33,8 +46,11 @@ struct GamePanelView: View {
         .background(shape.fill(Palette.background))
         .overlay {
             // Inner glow along the edge; the window is exactly the panel's size, so an outer glow would be clipped.
-            outline.stroke(Palette.paddle.opacity(0.6), lineWidth: 3).blur(radius: 4)
-            outline.stroke(Palette.paddle.opacity(0.33), lineWidth: 1)
+            Group {
+                outline.stroke(Palette.paddle.opacity(0.6), lineWidth: 3).blur(radius: 4)
+                outline.stroke(Palette.paddle.opacity(0.33), lineWidth: 1)
+            }
+            .opacity(solidity)
         }
         .clipShape(shape)
     }

@@ -9,7 +9,7 @@ import CoreGraphics
 
 /// The drop hangs from the point on the notch's bottom edge closest to the pointer,
 /// and stretches further the closer the pointer gets.
-enum Magnet {
+nonisolated enum Magnet {
     static let radius: CGFloat = 180
     static let maxLength: CGFloat = 40
 

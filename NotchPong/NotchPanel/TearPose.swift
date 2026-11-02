@@ -8,7 +8,7 @@
 import CoreGraphics
 
 /// How the black drop under the notch looks right now.
-struct TearPose: Equatable {
+nonisolated struct TearPose: Equatable {
     var length: CGFloat
     /// Horizontal lean of the drop's tip toward the pointer.
     var offsetX: CGFloat
