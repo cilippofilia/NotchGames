@@ -21,7 +21,7 @@ A small macOS game you open by clicking the notch and dragging down. A game pane
 User decision: these are out of v1 and go in the build plan as a v1.1 section.
 
 - Air hockey as a second game. It should reuse the Pong paddle, ball, walls and scoring code.
-- Local two-player mode.
+- Two-player mode. Built locally on one keyboard, then dropped in favour of multiplayer between two Macs over the network, still to be planned.
 - Scores saved between sessions.
 - A settings window beyond Quit.
 
