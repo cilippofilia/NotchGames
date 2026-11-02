@@ -13,6 +13,7 @@ struct PongView: View {
     let state: PanelState
 
     @State private var game = PongGame()
+    @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
     @State private var size = CGSize.zero
     @FocusState private var isFocused: Bool
 
@@ -39,6 +40,9 @@ struct PongView: View {
         }
         .onChange(of: state.matchID) {
             game.reset()
+        }
+        .onChange(of: difficulty, initial: true) {
+            game.difficulty = difficulty
         }
         .focusable()
         .focusEffectDisabled()

@@ -11,13 +11,25 @@ import Foundation
 /// Moves the left paddle toward where it expected the ball to arrive a moment ago, bounces included,
 /// at a capped speed, so it reads angled shots but can still be beaten.
 nonisolated struct ComputerOpponent {
-    var maxSpeed: CGFloat = 0.55
-    var reactionDelay: TimeInterval = 0.2
+    var maxSpeed: CGFloat = Difficulty.standard.opponentSpeed
+    var reactionDelay: TimeInterval = Difficulty.standard.reactionDelay
     /// Doesn't twitch for differences smaller than this.
     var deadZone: CGFloat = 0.02
 
     private var elapsed: TimeInterval = 0
     private var sightings: [(time: TimeInterval, height: CGFloat)] = []
+
+    init(maxSpeed: CGFloat = Difficulty.standard.opponentSpeed,
+         reactionDelay: TimeInterval = Difficulty.standard.reactionDelay,
+         deadZone: CGFloat = 0.02) {
+        self.maxSpeed = maxSpeed
+        self.reactionDelay = reactionDelay
+        self.deadZone = deadZone
+    }
+
+    init(difficulty: Difficulty) {
+        self.init(maxSpeed: difficulty.opponentSpeed, reactionDelay: difficulty.reactionDelay)
+    }
 
     mutating func nextPaddleY(current: CGFloat, ball: Ball, interval: TimeInterval) -> CGFloat {
         elapsed += interval

@@ -29,6 +29,11 @@ final class PongGame {
             }
         }
     }
+    /// Takes effect straight away, even mid-match.
+    var difficulty = Difficulty.standard {
+        didSet { computer = ComputerOpponent(difficulty: difficulty) }
+    }
+    var opponentSpeed: CGFloat { computer.maxSpeed }
     private var computer = ComputerOpponent()
     @ObservationIgnored private var lastTick: Date?
 
@@ -38,7 +43,7 @@ final class PongGame {
 
     func reset() {
         model = PongModel()
-        computer = ComputerOpponent()
+        computer = ComputerOpponent(difficulty: difficulty)
         isPaused = true
         countdown = 0
         lastPoint = nil

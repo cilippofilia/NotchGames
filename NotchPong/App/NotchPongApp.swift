@@ -14,9 +14,14 @@ struct NotchPongApp: App {
     var body: some Scene {
         MenuBarExtra("NotchPong", systemImage: "gamecontroller") {
             Button("Play Pong") { appDelegate.controller?.playFromMenu() }
+            SettingsMenuButton()
             Divider()
             Button("Quit NotchPong") { NSApplication.shared.terminate(nil) }
                 .keyboardShortcut("q")
+        }
+
+        Settings {
+            SettingsView()
         }
     }
 }

@@ -374,4 +374,4 @@ These each get their own spec/plan pass when started. They're listed here so v1 
 1. **Air hockey:** a second game that reuses `Ball` and the swept-collision approach. A game picker in the panel (or the menu).
 2. **Two-player mode:** local, with the second player on W/S keys and the player on the pointer or arrows. Needs a mode switch in `PongGame`.
 3. **Saved scores:** persist wins and losses (and the best streak) with `@AppStorage` or SwiftData, shown in the panel.
-4. **Settings window:** a `Settings` scene for computer difficulty, default panel size, launch at login (`SMAppService`) and the game picker.
+4. **Settings window:** difficulty picker done early (Easy/Moderate/Hard/Expert, Moderate default). Still to add: default panel size, launch at login (`SMAppService`) and the game picker.
