@@ -39,13 +39,12 @@ struct SettingsView: View {
                 ForEach(Difficulty.allCases) { level in
                     Text(level.title).tag(level)
                 }
-
-            StatsSection(store: StatsStore.shared)
             } label: {
                 Text("difficulty")
                 Text("how fast and sharp the computer plays")
             }
             .pickerStyle(.segmented)
+
             Picker(selection: $gutter) {
                 ForEach(GutterSize.allCases) { size in
                     Text(size.title).tag(size)
@@ -75,6 +74,8 @@ struct SettingsView: View {
                 // Show what macOS actually did, in case it refused.
                 launchesAtLogin = LoginItem.isEnabled
             }
+
+            StatsSection(store: StatsStore.shared)
         }
         .formStyle(.grouped)
         // Width can be dragged within these bounds; height always fits the content.
