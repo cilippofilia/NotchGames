@@ -58,10 +58,30 @@ struct ComputerOpponentTests {
         #expect(arrival >= PongModel.ballRadius && arrival <= 1 - PongModel.ballRadius)
     }
 
-    @Test func headsForTheBounceNotTheBall() {
+    @Test func nearbyBallIsReadOffTheWall() {
         var opponent = ComputerOpponent(maxSpeed: 100, reactionDelay: 0, deadZone: 0)
-        let ball = Ball(position: CGPoint(x: 0.8, y: 0.2), velocity: CGVector(dx: -1, dy: -1))
-        // The ball is up at 0.2 but will arrive lower, so the paddle goes down, not up.
-        #expect(opponent.nextPaddleY(current: 0.5, ball: ball, interval: 0.1) > 0.5)
+        // Close to the paddle and above it, but about to bounce off the top wall and arrive lower.
+        let ball = Ball(position: CGPoint(x: 0.25, y: 0.05), velocity: CGVector(dx: -1, dy: -1))
+        #expect(opponent.nextPaddleY(current: 0.12, ball: ball, interval: 0.1) > 0.12)
+    }
+
+    @Test func farAwayBallIsOnlyRoughlyGuessed() {
+        var opponent = ComputerOpponent(maxSpeed: 100, reactionDelay: 0, deadZone: 0)
+        // Will arrive low (about 0.69), but it's still far off, so the computer follows where it is (0.2) for now.
+        let ball = Ball(position: CGPoint(x: 1.5, y: 0.2), velocity: CGVector(dx: -1, dy: -1))
+        #expect(opponent.nextPaddleY(current: 0.5, ball: ball, interval: 0.1) < 0.5)
+    }
+
+    @Test func swaysWhileWaitingForTheBall() {
+        var opponent = ComputerOpponent(maxSpeed: 100, reactionDelay: 0, deadZone: 0)
+        let away = Ball(position: CGPoint(x: 0.8, y: 0.5), velocity: CGVector(dx: 1, dy: 0))
+        var positions: [CGFloat] = []
+        var paddle: CGFloat = 0.5
+        for _ in 0..<20 {
+            paddle = opponent.nextPaddleY(current: paddle, ball: away, interval: 0.1)
+            positions.append(paddle)
+        }
+        let spread = (positions.max() ?? 0) - (positions.min() ?? 0)
+        #expect(spread > 0.03)
     }
 }
