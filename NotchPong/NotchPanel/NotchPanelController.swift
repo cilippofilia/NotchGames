@@ -135,10 +135,7 @@ final class NotchPanelController: NSObject {
 
     /// Tells the game where the pointer is inside the open panel, in panel points from its top-left.
     private func updatePanelPointer(_ location: CGPoint, in geometry: NotchGeometry) {
-        let drop = dropRect(in: geometry)
-        let pointer = state.phase == .open && drop.contains(location)
-            ? CGPoint(x: location.x - drop.minX, y: drop.maxY - location.y)
-            : nil
+        let pointer = state.phase == .open ? PanelPointer.position(of: location, in: dropRect(in: geometry)) : nil
         if state.panelPointer != pointer { state.panelPointer = pointer }
     }
 
