@@ -8,7 +8,8 @@
 import CoreGraphics
 import Foundation
 
-/// Moves the left paddle toward where the ball was a moment ago, at a capped speed, so it can be beaten.
+/// Moves the left paddle toward where it expected the ball to arrive a moment ago, bounces included,
+/// at a capped speed, so it reads angled shots but can still be beaten.
 nonisolated struct ComputerOpponent {
     var maxSpeed: CGFloat = 0.75
     var reactionDelay: TimeInterval = 0.12
@@ -20,7 +21,7 @@ nonisolated struct ComputerOpponent {
 
     mutating func nextPaddleY(current: CGFloat, ball: Ball, interval: TimeInterval) -> CGFloat {
         elapsed += interval
-        sightings.append((elapsed, ball.position.y))
+        sightings.append((elapsed, PongModel.arrivalY(of: ball, atX: PongModel.paddleInset)))
         // React to the newest sighting at least `reactionDelay` old, or the oldest one while none is that old.
         let cutoff = elapsed - reactionDelay
         let seenIndex = sightings.lastIndex { $0.time <= cutoff } ?? 0

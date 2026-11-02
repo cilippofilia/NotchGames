@@ -44,4 +44,24 @@ struct ComputerOpponentTests {
         var opponent = ComputerOpponent(reactionDelay: 0)
         #expect(opponent.nextPaddleY(current: 0.5, ball: incoming(atY: 0.51), interval: 0.1) == 0.5)
     }
+
+    @Test func predictsWhereABouncingBallWillArrive() {
+        // Heading up-left steeply: it hits the top wall once, then comes down to the paddle at about 0.58.
+        let ball = Ball(position: CGPoint(x: 0.8, y: 0.2), velocity: CGVector(dx: -1, dy: -1))
+        let arrival = PongModel.arrivalY(of: ball, atX: PongModel.paddleInset)
+        #expect(abs(arrival - 0.584) < 0.01)
+    }
+
+    @Test func predictionHandlesSeveralBounces() {
+        let ball = Ball(position: CGPoint(x: 1.5, y: 0.5), velocity: CGVector(dx: -0.4, dy: 1.6))
+        let arrival = PongModel.arrivalY(of: ball, atX: PongModel.paddleInset)
+        #expect(arrival >= PongModel.ballRadius && arrival <= 1 - PongModel.ballRadius)
+    }
+
+    @Test func headsForTheBounceNotTheBall() {
+        var opponent = ComputerOpponent(maxSpeed: 100, reactionDelay: 0, deadZone: 0)
+        let ball = Ball(position: CGPoint(x: 0.8, y: 0.2), velocity: CGVector(dx: -1, dy: -1))
+        // The ball is up at 0.2 but will arrive lower, so the paddle goes down, not up.
+        #expect(opponent.nextPaddleY(current: 0.5, ball: ball, interval: 0.1) > 0.5)
+    }
 }

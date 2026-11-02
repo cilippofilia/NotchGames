@@ -78,6 +78,19 @@ nonisolated struct PongModel {
         }
     }
 
+    /// Where the ball will be when it reaches `faceX`, folding its path off the top and bottom walls.
+    static func arrivalY(of ball: Ball, atX faceX: CGFloat) -> CGFloat {
+        guard ball.velocity.dx != 0 else { return ball.position.y }
+        let time = max((faceX - ball.position.x) / ball.velocity.dx, 0)
+        let unbounded = ball.position.y + ball.velocity.dy * time
+        let low = ballRadius
+        let span = courtSize.height - 2 * ballRadius
+        // Each wall bounce mirrors the path, so fold the straight-line position back into the court.
+        var folded = (unbounded - low).truncatingRemainder(dividingBy: 2 * span)
+        if folded < 0 { folded += 2 * span }
+        return low + (folded <= span ? folded : 2 * span - folded)
+    }
+
     // MARK: - Private
 
     /// Where the ball's path crosses the paddle's face, so a fast ball can't skip past it in one step.

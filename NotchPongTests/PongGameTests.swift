@@ -30,15 +30,6 @@ struct PongGameTests {
         #expect(abs(game.model.ball.position.x - 0.8) < 0.001)
     }
 
-    @Test func runningGameMovesTheBall() {
-        let game = PongGame()
-        game.isPaused = false
-        let now = Date.now
-        game.tick(now: now)
-        game.tick(now: now.addingTimeInterval(1.0 / 60))
-        #expect(game.model.ball.position.x > 0.8)
-    }
-
     @Test func resetStartsFreshPausedMatch() {
         let game = PongGame()
         game.isPaused = false
@@ -62,5 +53,64 @@ struct PongGameTests {
         #expect(CourtLayout.courtY(forPanelY: court.minY, in: size) == 0)
         #expect(CourtLayout.courtY(forPanelY: court.maxY, in: size) == 1)
         #expect(court.maxY < size.height)
+    }
+
+    @Test func unpausingStartsTheCountdown() {
+        let game = PongGame()
+        game.isPaused = false
+        #expect(game.countdown == PongGame.countdownLength)
+    }
+
+    @Test func ballWaitsDuringTheCountdown() {
+        let game = PongGame()
+        game.isPaused = false
+        let now = Date.now
+        game.tick(now: now)
+        game.tick(now: now.addingTimeInterval(1))
+        game.tick(now: now.addingTimeInterval(2))
+        #expect(abs(game.model.ball.position.x - 0.8) < 0.001)
+        #expect(game.countdown > 0)
+    }
+
+    @Test func ballMovesOnceTheCountdownEnds() {
+        let game = PongGame()
+        game.isPaused = false
+        let now = Date.now
+        game.tick(now: now)
+        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.1))
+        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.12))
+        #expect(game.countdown == 0)
+        #expect(game.model.ball.position.x > 0.8)
+    }
+
+    @Test func pointStartsANewCountdown() {
+        var model = PongModel()
+        model.playerY = 0.1
+        model.ball = Ball(position: CGPoint(x: 1.59, y: 0.9), velocity: CGVector(dx: 1, dy: 0))
+        let game = PongGame(model: model)
+        game.isPaused = false
+        let now = Date.now
+        game.tick(now: now)
+        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.1))
+        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.13))
+        #expect(game.model.computerScore == 1)
+        #expect(game.countdown == PongGame.countdownLength)
+    }
+
+    @Test func resumingAfterAPauseCountsDownAgain() {
+        let game = PongGame()
+        game.isPaused = false
+        let now = Date.now
+        game.tick(now: now)
+        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.1))
+        game.isPaused = true
+        game.isPaused = false
+        #expect(game.countdown == PongGame.countdownLength)
+    }
+
+    @Test func countdownDigitsHaveGlyphs() {
+        for digit in "123" {
+            #expect(PixelFont.glyphs[digit] != nil)
+        }
     }
 }
