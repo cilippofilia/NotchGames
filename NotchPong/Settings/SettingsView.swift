@@ -77,8 +77,9 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 460)
-        .fixedSize()
+        // Width can be dragged within these bounds; height always fits the content.
+        .frame(minWidth: 420, idealWidth: 480, maxWidth: 720)
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
