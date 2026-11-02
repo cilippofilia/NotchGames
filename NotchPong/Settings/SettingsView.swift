@@ -15,18 +15,15 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Group {
-                Picker(selection: $difficulty) {
-                    ForEach(Difficulty.allCases) { level in
-                        Text(level.title).tag(level)
-                    }
-                } label: {
-                    Text("difficulty")
+            Picker(selection: $difficulty) {
+                ForEach(Difficulty.allCases) { level in
+                    Text(level.title).tag(level)
                 }
-                .pickerStyle(.segmented)
-
+            } label: {
+                Text("difficulty")
                 Text("how fast and sharp the computer plays")
             }
+            .pickerStyle(.segmented)
             Picker(selection: $gutter) {
                 ForEach(GutterSize.allCases) { size in
                     Text(size.title).tag(size)
