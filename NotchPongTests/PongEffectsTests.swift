@@ -49,4 +49,40 @@ struct PongEffectsTests {
         #expect(ScorePulse.scale(age: ScorePulse.duration) == 1)
         #expect(ScorePulse.scale(age: nil) == 1)
     }
+
+    @Test func wallBounceIsRecordedWhereItHit() {
+        var model = PongModel()
+        model.ball = Ball(position: CGPoint(x: 0.8, y: 0.013), velocity: CGVector(dx: 0.5, dy: -1))
+        model.step(by: 0.01)
+        #expect(model.wallBounce?.y == 0)
+        model.step(by: 0.01)
+        #expect(model.wallBounce == nil)
+    }
+
+    @Test func gameKeepsTheLastWallHit() {
+        var model = PongModel()
+        model.ball = Ball(position: CGPoint(x: 0.8, y: 0.987), velocity: CGVector(dx: 0.5, dy: 1))
+        let game = PongGame(model: model)
+        game.isPaused = false
+        let now = Date.now
+        game.tick(now: now)
+        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.1))
+        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.11))
+        #expect(game.lastWallHit?.position.y == PongModel.courtSize.height)
+    }
+
+    @Test func wallSparkFliesBackIntoTheCourt() {
+        let fromTop = Explosion.wallSpark(age: 0.1, hitTop: true)
+        let fromBottom = Explosion.wallSpark(age: 0.1, hitTop: false)
+        #expect(!fromTop.isEmpty)
+        #expect(fromTop.allSatisfy { $0.offset.dy >= 0 })
+        #expect(fromBottom.allSatisfy { $0.offset.dy <= 0 })
+        #expect(Explosion.wallSpark(age: Explosion.sparkDuration, hitTop: true).isEmpty)
+    }
+
+    @Test func courtSitsCloseToThePanelEdges() {
+        let court = CourtLayout.rect(in: CGSize(width: 640, height: 400))
+        #expect(court.minY <= 6)
+        #expect(400 - court.maxY <= 6)
+    }
 }

@@ -30,6 +30,8 @@ nonisolated struct PongModel {
     private(set) var playerScore = 0
     private(set) var computerScore = 0
     private(set) var winner: PongSide?
+    /// Where the ball touched the top or bottom wall during the last step, if it did.
+    private(set) var wallBounce: CGPoint?
     private var serveAngle: CGFloat
 
     init(serveToward side: PongSide = .player, serveAngle: CGFloat = 0.3) {
@@ -40,6 +42,7 @@ nonisolated struct PongModel {
 
     mutating func step(by interval: TimeInterval) {
         guard winner == nil else { return }
+        wallBounce = nil
         let time = CGFloat(min(interval, Self.maxStep))
         let start = ball.position
         var end = CGPoint(x: start.x + ball.velocity.dx * time, y: start.y + ball.velocity.dy * time)
@@ -49,9 +52,11 @@ nonisolated struct PongModel {
         if end.y < top {
             end.y = 2 * top - end.y
             ball.velocity.dy = abs(ball.velocity.dy)
+            wallBounce = CGPoint(x: end.x, y: 0)
         } else if end.y > bottom {
             end.y = 2 * bottom - end.y
             ball.velocity.dy = -abs(ball.velocity.dy)
+            wallBounce = CGPoint(x: end.x, y: Self.courtSize.height)
         }
 
         let playerFace = Self.courtSize.width - Self.paddleInset

@@ -8,32 +8,60 @@
 import CoreGraphics
 import Foundation
 
-/// The burst of pixels where a point was scored. They fan back into the court and fade out.
+/// Bursts of pixels: a big one where a point was scored, a small spark where the ball hits a wall.
+/// The pieces fan back into the court and fade out.
 nonisolated enum Explosion {
     static let duration: TimeInterval = 0.6
-    private static let pieceCount = 14
-    /// How far the fastest piece travels, in court units.
-    private static let reach: CGFloat = 0.25
+    static let sparkDuration: TimeInterval = 0.25
 
     static func particles(age: TimeInterval, side: PongSide) -> [ExplosionParticle] {
+        // The computer scores on the right wall, the player on the left; pieces fly back toward the middle.
+        burst(
+            age: age,
+            duration: duration,
+            inward: CGVector(dx: side == .computer ? -1 : 1, dy: 0),
+            count: 14,
+            reach: 0.25
+        )
+    }
+
+    /// The top wall is at y = 0 (court y runs down), so its spark flies down; the bottom wall's flies up.
+    static func wallSpark(age: TimeInterval, hitTop: Bool) -> [ExplosionParticle] {
+        burst(
+            age: age,
+            duration: sparkDuration,
+            inward: CGVector(dx: 0, dy: hitTop ? 1 : -1),
+            count: 6,
+            reach: 0.07
+        )
+    }
+
+    /// Pieces spread across a fan around `inward`, fast at first, then slowing as they fade.
+    /// Sideways bursts are points and mix pink with teal; up/down ones are wall sparks and stay teal.
+    private static func burst(
+        age: TimeInterval,
+        duration: TimeInterval,
+        inward: CGVector,
+        count: Int,
+        reach: CGFloat
+    ) -> [ExplosionParticle] {
+        let alternatesColor = inward.dx != 0
         guard age >= 0, age < duration else { return [] }
         let progress = age / duration
-        // Fast at first, then slowing down.
         let travel = reach * CGFloat(1 - pow(1 - progress, 3))
-        // The computer scores on the right wall, the player on the left; pieces fly back toward the middle.
-        let inward: CGFloat = side == .computer ? -1 : 1
-        return (0..<pieceCount).map { index in
-            let fraction = (Double(index) + 0.5) / Double(pieceCount)
-            let angle = (fraction - 0.5) * .pi * 0.9
+        let heading = atan2(Double(inward.dy), Double(inward.dx))
+        return (0..<count).map { index in
+            let fraction = (Double(index) + 0.5) / Double(count)
+            let angle = heading + (fraction - 0.5) * .pi * 0.9
             // Fixed per piece, so the burst looks scattered but is the same every time.
             let speed = 0.55 + 0.45 * Double((index * 7) % 5) / 4
             return ExplosionParticle(
                 offset: CGVector(
-                    dx: inward * CGFloat(cos(angle) * speed) * travel,
+                    dx: CGFloat(cos(angle) * speed) * travel,
                     dy: CGFloat(sin(angle) * speed) * travel
                 ),
                 opacity: 1 - progress,
-                isPink: index.isMultiple(of: 2)
+                isPink: alternatesColor && index.isMultiple(of: 2)
             )
         }
     }

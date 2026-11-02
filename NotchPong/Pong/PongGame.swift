@@ -21,6 +21,8 @@ final class PongGame {
     private(set) var countdown: TimeInterval = 0
     /// The most recent point, for its explosion and score pop.
     private(set) var lastPoint: PointEvent?
+    /// The most recent wall bounce, for its spark.
+    private(set) var lastWallHit: WallHit?
     var isPaused = true {
         didSet {
             if isPaused {
@@ -58,6 +60,7 @@ final class PongGame {
         isPaused = true
         countdown = 0
         lastPoint = nil
+        lastWallHit = nil
         lastTick = nil
         pendingAim = nil
         pendingLeftAim = nil
@@ -93,6 +96,7 @@ final class PongGame {
         let computerScoreBefore = model.computerScore
         let ballBefore = model.ball.position
         model.step(by: interval)
+        if let bounce = model.wallBounce { lastWallHit = WallHit(position: bounce, time: now) }
         guard model.playerScore != playerScoreBefore || model.computerScore != computerScoreBefore else { return }
         let side: PongSide = model.playerScore != playerScoreBefore ? .player : .computer
         let exitY = min(max(ballBefore.y, 0), PongModel.courtSize.height)

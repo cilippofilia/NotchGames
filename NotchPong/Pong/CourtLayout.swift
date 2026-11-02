@@ -7,12 +7,12 @@
 
 import CoreGraphics
 
-/// Where the court sits inside the panel: clear of the rounded corners and of the close handle at the bottom.
+/// Where the court sits inside the panel: in from the sides for the rounded corners, close to the top and bottom.
 nonisolated enum CourtLayout {
     private static let sideInset: CGFloat = 24
-    private static let topInset: CGFloat = 20
-    /// Leaves room for the close handle.
-    private static let bottomInset: CGFloat = 28
+    /// Thin top and bottom walls, so the ball bounces right at the panel's edge; the handle sits over the court.
+    private static let topInset: CGFloat = 6
+    private static let bottomInset: CGFloat = 6
 
     static func rect(in size: CGSize) -> CGRect {
         CGRect(

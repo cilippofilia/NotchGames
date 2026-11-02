@@ -137,11 +137,33 @@ struct PongView: View {
             glow(ball, color: Palette.ball.opacity(isWaiting ? Self.waitingBallOpacity : 1), in: &context)
         }
 
+        if let hit = game.lastWallHit {
+            drawWallSpark(for: hit, age: date.timeIntervalSince(hit.time), in: court, context: &context)
+        }
+
         let pointAge = game.lastPoint.map { date.timeIntervalSince($0.time) }
         if let point = game.lastPoint, let pointAge {
             drawExplosion(for: point, age: pointAge, in: court, context: &context)
         }
         drawScores(model, scorer: game.lastPoint?.side, pointAge: pointAge, in: court, context: &context)
+    }
+
+    /// A little teal spark where the ball touched the top or bottom wall.
+    private static func drawWallSpark(for hit: WallHit, age: TimeInterval, in court: CGRect, context: inout GraphicsContext) {
+        let particles = Explosion.wallSpark(age: age, hitTop: hit.position.y == 0)
+        guard let opacity = particles.first?.opacity else { return }
+        let scaleX = court.width / PongModel.courtSize.width
+        let scaleY = court.height / PongModel.courtSize.height
+        let piece = max(court.height * 0.014, 3)
+        var sparks = Path()
+        for particle in particles {
+            let center = CGPoint(
+                x: court.minX + (hit.position.x + particle.offset.dx) * scaleX,
+                y: court.minY + (hit.position.y + particle.offset.dy) * scaleY
+            )
+            sparks.addRect(CGRect(x: center.x - piece / 2, y: center.y - piece / 2, width: piece, height: piece))
+        }
+        glow(sparks, color: Palette.paddle.opacity(opacity), in: &context)
     }
 
     /// Pixels bursting back into the court from where the ball went out.
