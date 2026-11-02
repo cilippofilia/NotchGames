@@ -7,13 +7,12 @@
 
 import SwiftUI
 
-/// The app's Settings window: the game, players and difficulty, the panel, and the player's record.
+/// The app's Settings window: the game and difficulty, the panel, and the player's record.
 struct SettingsView: View {
     @AppStorage(GameKind.storageKey) private var game = GameKind.standard
     @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
     @AppStorage(GutterSize.storageKey) private var gutter = GutterSize.standard
     @AppStorage(PanelSize.storageKey) private var panelSize = PanelSize.standard
-    @AppStorage(PlayerCount.storageKey) private var players = PlayerCount.standard
     @State private var launchesAtLogin = LoginItem.isEnabled
 
     var body: some View {
@@ -24,16 +23,6 @@ struct SettingsView: View {
                 }
             }
             .pickerStyle(.menu)
-
-            Picker(selection: $players) {
-                ForEach(PlayerCount.allCases) { count in
-                    Text(count.title).tag(count)
-                }
-            } label: {
-                Text("players")
-                Text("2 players: left on W/S (W/A/S/D in air hockey), right on the pointer or arrows")
-            }
-            .pickerStyle(.segmented)
 
             Picker(selection: $difficulty) {
                 ForEach(Difficulty.allCases) { level in

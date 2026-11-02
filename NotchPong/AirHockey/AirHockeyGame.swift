@@ -9,7 +9,7 @@ import CoreGraphics
 import Foundation
 import Observation
 
-/// Runs an air hockey match: frame timing, the computer (or second player), the player's aim, and the
+/// Runs an air hockey match: frame timing, the computer, the player's aim, and the
 /// points and wall hits the view turns into effects.
 @MainActor
 @Observable
@@ -19,12 +19,10 @@ final class AirHockeyGame {
     private(set) var lastPoint: PointEvent?
     private(set) var lastWallHit: WallHit?
     var difficulty = Difficulty.standard
-    var playerCount = PlayerCount.standard
-    /// Called once when a match is decided, with the side that won and whether it was against the computer.
-    @ObservationIgnored var onMatchEnd: ((PongSide, PlayerCount) -> Void)?
-    /// Where each mallet is being steered, in court units.
+    /// Called once when a match is decided, with the side that won.
+    @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
+    /// Where the player's mallet is being steered, in court units.
     @ObservationIgnored private var playerAim: CGPoint
-    @ObservationIgnored private var leftAim: CGPoint
 
     /// The computer's mallet speed, scaled from the Pong paddle speed because it covers a whole half-court.
     private static let speedScale: CGFloat = 2.4
@@ -39,7 +37,6 @@ final class AirHockeyGame {
     init(model: AirHockeyModel = AirHockeyModel()) {
         self.model = model
         playerAim = model.playerMallet
-        leftAim = model.computerMallet
     }
 
     func reset() {
@@ -48,14 +45,11 @@ final class AirHockeyGame {
         lastPoint = nil
         lastWallHit = nil
         playerAim = model.playerMallet
-        leftAim = model.computerMallet
     }
 
     func tick(now: Date) {
         guard case .playing(let interval) = clock.advance(to: now) else { return }
-        let computerTarget = playerCount == .one
-            ? AirHockeyOpponent.target(puck: model.puck, mallet: model.computerMallet)
-            : leftAim
+        let computerTarget = AirHockeyOpponent.target(puck: model.puck, mallet: model.computerMallet)
         let puckBefore = model.puck.position
         let scoresBefore = (model.playerScore, model.computerScore)
         model.step(
@@ -75,7 +69,7 @@ final class AirHockeyGame {
             time: now
         )
         if let winner = model.winner {
-            onMatchEnd?(winner, playerCount)
+            onMatchEnd?(winner)
         } else {
             clock.startCountdown()
         }
@@ -87,17 +81,8 @@ final class AirHockeyGame {
         playerAim = point
     }
 
-    /// The second player's mallet in two-player mode.
-    func aimLeft(at point: CGPoint) {
-        leftAim = point
-    }
-
     func nudgeAim(by delta: CGVector) {
         aim(at: CGPoint(x: playerAim.x + delta.dx, y: playerAim.y + delta.dy))
-    }
-
-    func nudgeLeftAim(by delta: CGVector) {
-        aimLeft(at: CGPoint(x: leftAim.x + delta.dx, y: leftAim.y + delta.dy))
     }
 
     /// Same rule as Pong: only the panel itself starts a paused game; the gutter keeps a running one going.

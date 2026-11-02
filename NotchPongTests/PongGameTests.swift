@@ -178,44 +178,6 @@ struct PongGameTests {
         #expect(game.isPaused)
     }
 
-    private func startedTwoPlayerGame() -> PongGame {
-        let game = PongGame()
-        game.playerCount = .two
-        game.isPaused = false
-        let now = Date.now
-        game.tick(now: now)
-        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.1))
-        return game
-    }
-
-    @Test func secondPlayerMovesTheLeftPaddle() {
-        let game = startedTwoPlayerGame()
-        game.aimLeftPaddle(y: 0.3)
-        #expect(game.model.computerY == 0.3)
-    }
-
-    @Test func computerSitsOutInTwoPlayer() {
-        let game = startedTwoPlayerGame()
-        let start = game.model.computerY
-        game.tick(now: Date.now.addingTimeInterval(PongGame.countdownLength + 0.5))
-        #expect(game.model.computerY == start)
-    }
-
-    @Test func leftAimDoesNothingInOnePlayer() {
-        let game = PongGame()
-        game.isPaused = false
-        let now = Date.now
-        game.tick(now: now)
-        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.1))
-        game.aimLeftPaddle(y: 0.3)
-        #expect(game.model.computerY != 0.3)
-    }
-
-    @Test func onePlayerIsTheDefault() {
-        #expect(PlayerCount.standard == .one)
-        #expect(PongGame().playerCount == .one)
-    }
-
     @Test func courtMapsPanelPointsToCourtUnits() {
         let size = CGSize(width: 640, height: 400)
         let court = CourtLayout.rect(in: size)

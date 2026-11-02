@@ -8,13 +8,12 @@
 import SwiftUI
 
 /// Draws an air hockey match in neon and feeds it input: the pointer steers the right mallet anywhere in its half,
-/// the arrow keys too; with two players W/A/S/D steer the left mallet. The game pauses when the pointer leaves.
+/// the arrow keys or W/A/S/D too. The game pauses when the pointer leaves.
 struct AirHockeyView: View {
     let state: PanelState
 
     @State private var game = AirHockeyGame()
     @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
-    @AppStorage(PlayerCount.storageKey) private var players = PlayerCount.standard
     @State private var size = CGSize.zero
     @FocusState private var isFocused: Bool
 
@@ -40,7 +39,6 @@ struct AirHockeyView: View {
             MatchMessageView(
                 winner: game.winner,
                 isPaused: game.isPaused,
-                playerCount: game.playerCount,
                 onPlayAgain: game.reset
             )
         }
@@ -58,9 +56,6 @@ struct AirHockeyView: View {
         .onChange(of: difficulty, initial: true) {
             game.difficulty = difficulty
         }
-        .onChange(of: players, initial: true) {
-            game.playerCount = players
-        }
         .focusable()
         .focusEffectDisabled()
         .focused($isFocused)
@@ -70,11 +65,7 @@ struct AirHockeyView: View {
         }
         .onAppear {
             isFocused = true
-            // Only games against the computer count toward the record.
-            game.onMatchEnd = { winner, players in
-                guard players == .one else { return }
-                StatsStore.shared.record(winner: winner)
-            }
+            game.onMatchEnd = { StatsStore.shared.record(winner: $0) }
         }
         .accessibilityElement()
         .accessibilityLabel("air hockey")
@@ -83,19 +74,13 @@ struct AirHockeyView: View {
 
     private func steer(with press: KeyPress) {
         let step = Self.keyStep
-        let isLetter = ["w", "a", "s", "d"].contains(press.characters)
         let delta: CGVector = switch (press.key, press.characters) {
         case (.upArrow, _), (_, "w"): CGVector(dx: 0, dy: -step)
         case (.downArrow, _), (_, "s"): CGVector(dx: 0, dy: step)
         case (.leftArrow, _), (_, "a"): CGVector(dx: -step, dy: 0)
         default: CGVector(dx: step, dy: 0)
         }
-        // With two players W/A/S/D steer the left mallet; otherwise every key steers the right one.
-        if game.playerCount == .two, isLetter {
-            game.nudgeLeftAim(by: delta)
-        } else {
-            game.nudgeAim(by: delta)
-        }
+        game.nudgeAim(by: delta)
         if game.winner == nil { game.isPaused = false }
     }
 
@@ -144,7 +129,7 @@ struct AirHockeyView: View {
         )
     }
 
-    /// Faint walls, bright goal mouths at both ends, the center line and the center circle.
+    /// Bright goal mouths at both ends, the center line and the center circle.
     private static func drawRink(in court: CGRect, scaleY: CGFloat, context: inout GraphicsContext) {
         CourtEffects.drawCenterLine(in: court, context: &context)
         let goalTop = court.minY + (AirHockeyModel.courtSize.height / 2 - AirHockeyModel.goalHalfHeight) * scaleY

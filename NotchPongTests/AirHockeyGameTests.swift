@@ -55,14 +55,6 @@ struct AirHockeyGameTests {
         #expect(game.model.playerMallet.y < 0.5)
     }
 
-    @Test func secondPlayerDrivesTheLeftMallet() {
-        let (game, now) = startedGame()
-        game.playerCount = .two
-        game.aimLeft(at: CGPoint(x: 0.3, y: 0.9))
-        game.tick(now: now.addingTimeInterval(1.0 / 30))
-        #expect(game.model.computerMallet.y > 0.5)
-    }
-
     @Test func goalRecordsThePointAndCountsDownAgain() {
         var model = AirHockeyModel()
         model.puck = Ball(position: CGPoint(x: 1.59, y: 0.5), velocity: CGVector(dx: 1, dy: 0))
