@@ -1,0 +1,163 @@
+{
+  "fill" : {
+    "solid" : "extended-gray:0.00000,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "debug.svg",
+          "name" : "debug",
+          "position" : {
+            "scale" : 4,
+            "translation-in-points" : [
+              0,
+              -259
+            ]
+          }
+        }
+      ],
+      "name" : "Group",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.3
+      }
+    },
+    {
+      "blend-mode" : "normal",
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "extended-gray:0.00000,1.00000"
+          },
+          "glass" : false,
+          "image-name" : "notch.svg",
+          "name" : "notch",
+          "position" : {
+            "scale" : 1.47,
+            "translation-in-points" : [
+              0,
+              -30
+            ]
+          }
+        }
+      ],
+      "name" : "notch",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.3
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "Ball.svg",
+          "name" : "Ball",
+          "position" : {
+            "scale" : 2,
+            "translation-in-points" : [
+              120,
+              150
+            ]
+          }
+        },
+        {
+          "image-name" : "Paddle.svg",
+          "name" : "Paddle left",
+          "position" : {
+            "scale" : 2,
+            "translation-in-points" : [
+              -398,
+              -57.5
+            ]
+          }
+        },
+        {
+          "image-name" : "Paddle.svg",
+          "name" : "Paddle right",
+          "position" : {
+            "scale" : 2,
+            "translation-in-points" : [
+              398,
+              149.38995
+            ]
+          }
+        },
+        {
+          "image-name" : "Centre line.svg",
+          "name" : "divider",
+          "opacity" : 0.5,
+          "position" : {
+            "scale" : 1.5,
+            "translation-in-points" : [
+              0,
+              40
+            ]
+          }
+        }
+      ],
+      "name" : "game",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.3
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "edge.svg",
+          "name" : "edge",
+          "position" : {
+            "scale" : 1.47,
+            "translation-in-points" : [
+              -1.1368683772161603e-13,
+              -0.6100500000000011
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "automatic-gradient" : "srgb:0.12984,0.12985,0.12984,1.00000"
+          },
+          "hidden" : false,
+          "image-name" : "background.svg",
+          "name" : "background",
+          "position" : {
+            "scale" : 1.47,
+            "translation-in-points" : [
+              -1.1368683772161603e-13,
+              -0.6100500000000011
+            ]
+          }
+        }
+      ],
+      "name" : "background",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.3
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
