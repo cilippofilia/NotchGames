@@ -35,7 +35,7 @@ struct DropGeometryTests {
 
     @Test func pulledDropHangsFromTheWholeNotch() {
         let width = DropGeometry.attachWidth(forLength: 300, notchWidth: 190, dropOffset: 0)
-        #expect(width == 190 - 2 * DropGeometry.attachInset)
+        #expect(width == 190)
     }
 
     @Test(arguments: [0, 40, 80, 120, 160, 240, 460])
@@ -43,7 +43,7 @@ struct DropGeometryTests {
         let length = CGFloat(length)
         let half = DropGeometry.attachWidth(forLength: length, notchWidth: 190, dropOffset: 49) / 2
         let offset = DropGeometry.offset(forLength: length, dropOffset: 49)
-        #expect(half + abs(offset) <= 95 - DropGeometry.attachInset + 0.001)
+        #expect(half + abs(offset) <= 95 + 0.001)
     }
 
     @Test func frameHoldsBothTopAndBody() {

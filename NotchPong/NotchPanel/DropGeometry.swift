@@ -12,8 +12,6 @@ nonisolated enum DropGeometry {
     static let dripWidth: CGFloat = 28
     /// The drip is wider where it clings to the notch than at its bulb, which makes it a tear.
     static let dripTopWidth: CGFloat = 44
-    /// Keeps the top edge off the notch's own rounded bottom corners.
-    static let attachInset: CGFloat = 8
     /// Hanging length, past a full drip, over which the top widens from the tear to the whole notch.
     private static let attachLength: CGFloat = 80
     static let cornerRadius: CGFloat = 28
@@ -32,9 +30,9 @@ nonisolated enum DropGeometry {
     /// Width of the top edge stuck to the notch: a narrow tear at rest, widening to the whole notch once pulled,
     /// so it looks like the notch itself is being stretched down. Centered on the body, and never past the notch.
     static func attachWidth(forLength length: CGFloat, notchWidth: CGFloat, dropOffset: CGFloat) -> CGFloat {
-        let room = notchWidth - 2 * attachInset - 2 * abs(offset(forLength: length, dropOffset: dropOffset))
+        let room = notchWidth - 2 * abs(offset(forLength: length, dropOffset: dropOffset))
         let progress = min(max((length - Magnet.maxLength) / attachLength, 0), 1)
-        let wanted = dripTopWidth + (notchWidth - 2 * attachInset - dripTopWidth) * progress
+        let wanted = dripTopWidth + (notchWidth - dripTopWidth) * progress
         return max(min(wanted, room), 0)
     }
 
