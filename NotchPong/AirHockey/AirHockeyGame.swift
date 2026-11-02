@@ -20,8 +20,8 @@ final class AirHockeyGame {
     private(set) var lastWallHit: WallHit?
     var difficulty = Difficulty.standard
     var playerCount = PlayerCount.standard
-    /// Called once when a match is decided, with the side that won.
-    @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
+    /// Called once when a match is decided, with the side that won and whether it was against the computer.
+    @ObservationIgnored var onMatchEnd: ((PongSide, PlayerCount) -> Void)?
     /// Where each mallet is being steered, in court units.
     @ObservationIgnored private var playerAim: CGPoint
     @ObservationIgnored private var leftAim: CGPoint
@@ -75,7 +75,7 @@ final class AirHockeyGame {
             time: now
         )
         if let winner = model.winner {
-            onMatchEnd?(winner)
+            onMatchEnd?(winner, playerCount)
         } else {
             clock.startCountdown()
         }

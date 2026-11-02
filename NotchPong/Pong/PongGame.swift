@@ -36,8 +36,8 @@ final class PongGame {
     /// Takes effect straight away, even mid-match.
     var playerCount = PlayerCount.standard
     private var computer = ComputerOpponent()
-    /// Called once when a match is decided, with the side that won.
-    @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
+    /// Called once when a match is decided, with the side that won and whether it was against the computer.
+    @ObservationIgnored var onMatchEnd: ((PongSide, PlayerCount) -> Void)?
     /// Where the player last aimed while the paddles were frozen; applied when play starts.
     @ObservationIgnored private var pendingAim: CGFloat?
     @ObservationIgnored private var pendingLeftAim: CGFloat?
@@ -94,7 +94,7 @@ final class PongGame {
             time: now
         )
         if let winner = model.winner {
-            onMatchEnd?(winner)
+            onMatchEnd?(winner, playerCount)
         } else {
             clock.startCountdown()
         }

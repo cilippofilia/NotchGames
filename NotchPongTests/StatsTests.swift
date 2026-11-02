@@ -48,7 +48,7 @@ struct StatsTests {
         model.playerY = 0.1
         model.ball = Ball(position: CGPoint(x: 1.59, y: 0.9), velocity: CGVector(dx: 1, dy: 0))
         let game = PongGame(model: model)
-        game.onMatchEnd = { winners.append($0) }
+        game.onMatchEnd = { winner, _ in winners.append(winner) }
         game.isPaused = false
         let now = Date.now
         game.tick(now: now)

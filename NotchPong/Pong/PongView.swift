@@ -75,8 +75,8 @@ struct PongView: View {
         .onAppear {
             isFocused = true
             // Only games against the computer count toward the record.
-            game.onMatchEnd = { [weak game] winner in
-                guard game?.playerCount == .one else { return }
+            game.onMatchEnd = { winner, players in
+                guard players == .one else { return }
                 StatsStore.shared.record(winner: winner)
             }
         }
