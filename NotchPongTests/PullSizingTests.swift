@@ -37,4 +37,21 @@ struct PullSizingTests {
     @Test func upwardFlickClosesEvenWhenLarge() {
         #expect(PullSizing.releaseOutcome(pull: 380, upwardVelocity: 1200) == .close)
     }
+
+    @Test func rubberBandFollowsPullUpToMax() {
+        #expect(PullSizing.rubberBandedHeight(forPull: 300) == 300)
+    }
+
+    @Test func rubberBandStretchesPastMaxWithResistance() {
+        let height = PullSizing.rubberBandedHeight(forPull: 500)
+        #expect(height > 400 && height < 440)
+    }
+
+    @Test func rubberBandStretchIsCapped() {
+        #expect(PullSizing.rubberBandedHeight(forPull: 5000) == 400 + PullSizing.maxStretch)
+    }
+
+    @Test func rubberBandNeverNegative() {
+        #expect(PullSizing.rubberBandedHeight(forPull: -40) == 0)
+    }
 }

@@ -25,12 +25,14 @@ final class NotchPanelController {
     private var anchor: NotchGeometry?
     private var tracker = PullTracker()
     private var wasOpenBeforeDrag = false
+    /// Drives the panel's body height so it trails the pointer, overshoots when it opens and springs back shut.
+    private var heightSpring = Spring(stiffness: 260, dampingRatio: 0.55)
+    private var lastSpringTime: TimeInterval?
     private var pointerLoop: Task<Void, Never>?
     private var screenObserver: Task<Void, Never>?
 
     /// Width of the virtual neck on Macs without a notch.
     private static let virtualNeckWidth: CGFloat = 190
-    private static let snapDuration: TimeInterval = 0.2
     private static let tearPanelHeight: CGFloat = 60
     /// The drop has to be at least this long before it can be grabbed.
     private static let minGrabLength: CGFloat = 10
@@ -65,7 +67,7 @@ final class NotchPanelController {
         guard let geometry = notch ?? virtualGeometry() else { return }
         anchor = geometry
         wasOpenBeforeDrag = false
-        showGamePanel(bodySize: .zero)
+        showGamePanel()
         settle(.open(PullSizing.bodySize(forPull: PullSizing.maxBodyHeight)))
     }
 
@@ -77,9 +79,12 @@ final class NotchPanelController {
         guard anchor != nil else { return }
         state.phase = .dragging
         state.tear = TearPose(length: 0, offsetX: 0)
-        let size = PullSizing.bodySize(forPull: pull)
-        state.bodySize = size
-        showGamePanel(bodySize: size)
+        state.bodySize = PullSizing.bodySize(forPull: pull)
+        // Stiff and well damped: trails the pointer slightly without wobbling.
+        heightSpring.stiffness = 900
+        heightSpring.dampingRatio = 0.85
+        heightSpring.target = PullSizing.rubberBandedHeight(forPull: pull)
+        showGamePanel()
     }
 
     func endPull(pull: CGFloat, upwardVelocity: CGFloat) {
@@ -123,8 +128,9 @@ final class NotchPanelController {
         case .pull(let pull): updatePull(pull)
         case .release(let pull, let velocity): endPull(pull: pull, upwardVelocity: velocity)
         }
+        advanceSpring(now: sample.time)
 
-        let isActive = state.phase != .closed || state.tear.length > 0 || sample.isPressed
+        let isActive = state.phase != .closed || state.tear.length > 0 || sample.isPressed || !heightSpring.isSettled
         return isActive ? Self.fastPoll : Self.slowPoll
     }
 
@@ -212,9 +218,10 @@ final class NotchPanelController {
         return panel
     }
 
-    private func frame(for bodySize: CGSize, in geometry: NotchGeometry) -> CGRect {
-        let width = max(bodySize.width, geometry.notchRect.width)
-        let height = geometry.menuBarHeight + NotchShape.neckSlack + bodySize.height
+    private func frame(forBodyHeight bodyHeight: CGFloat, in geometry: NotchGeometry) -> CGRect {
+        let bodyHeight = max(bodyHeight, 0)
+        let width = max(bodyHeight * PullSizing.aspect, geometry.notchRect.width)
+        let height = geometry.menuBarHeight + NotchShape.neckSlack + bodyHeight
         return CGRect(
             x: geometry.notchRect.midX - width / 2,
             y: geometry.notchRect.maxY - height,
@@ -225,30 +232,47 @@ final class NotchPanelController {
 
     // MARK: - Showing and hiding
 
-    private func showGamePanel(bodySize: CGSize) {
+    private func showGamePanel() {
         guard let anchor else { return }
         state.neckWidth = anchor.notchRect.width
         state.neckHeight = anchor.menuBarHeight + NotchShape.neckSlack
         let panel = gamePanel ?? makeGamePanel()
-        panel.setFrame(frame(for: bodySize, in: anchor), display: true)
-        if !panel.isVisible { panel.orderFrontRegardless() }
+        guard !panel.isVisible else { return }
+        panel.setFrame(frame(forBodyHeight: heightSpring.value, in: anchor), display: true)
+        panel.orderFrontRegardless()
     }
 
     private func settle(_ outcome: ReleaseOutcome) {
-        guard let anchor, let panel = gamePanel else { return }
+        guard let panel = gamePanel else { return }
         switch outcome {
         case .open(let size):
             if !wasOpenBeforeDrag { state.startNewMatch() }
             state.bodySize = size
             state.phase = .open
-            animate(panel, to: frame(for: size, in: anchor)) {}
+            // Loose enough to overshoot and bounce once before settling.
+            heightSpring.stiffness = 260
+            heightSpring.dampingRatio = 0.55
+            heightSpring.target = size.height
             panel.makeKey()
         case .close:
             state.phase = .closed
-            animate(panel, to: frame(for: .zero, in: anchor)) { [weak self] in
-                self?.finishClosing()
-            }
+            heightSpring.stiffness = 320
+            heightSpring.dampingRatio = 0.8
+            heightSpring.target = 0
         }
+    }
+
+    /// Steps the spring and resizes the panel; hides the panel once it has sprung shut.
+    private func advanceSpring(now: TimeInterval) {
+        guard let anchor, let panel = gamePanel, panel.isVisible else {
+            lastSpringTime = nil
+            return
+        }
+        let elapsed = lastSpringTime.map { min(now - $0, 0.05) } ?? 0
+        lastSpringTime = now
+        heightSpring.step(by: elapsed)
+        panel.setFrame(frame(forBodyHeight: heightSpring.value, in: anchor), display: true)
+        if state.phase == .closed, heightSpring.value < 1 { finishClosing() }
     }
 
     private func closeImmediately() {
@@ -260,17 +284,10 @@ final class NotchPanelController {
         // A new pull may have started during the close animation.
         guard state.phase == .closed else { return }
         state.bodySize = .zero
+        heightSpring.value = 0
+        heightSpring.velocity = 0
+        heightSpring.target = 0
         anchor = nil
         gamePanel?.orderOut(nil)
-    }
-
-    private func animate(_ panel: NSPanel, to frame: CGRect, completion: @escaping @MainActor () -> Void) {
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = Self.snapDuration
-            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            panel.animator().setFrame(frame, display: true)
-        } completionHandler: {
-            Task { @MainActor in completion() }
-        }
     }
 }
