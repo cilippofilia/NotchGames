@@ -14,23 +14,19 @@ import Observation
 @MainActor
 @Observable
 final class PongGame {
-    static let countdownLength: TimeInterval = 3
+    static let countdownLength = MatchClock.countdownLength
 
     private(set) var model: PongModel
+    private var clock = MatchClock()
     /// Seconds left before the ball moves; runs at the start, after every pause and after every point.
-    private(set) var countdown: TimeInterval = 0
+    var countdown: TimeInterval { clock.countdown }
     /// The most recent point, for its explosion and score pop.
     private(set) var lastPoint: PointEvent?
     /// The most recent wall bounce, for its spark.
     private(set) var lastWallHit: WallHit?
-    var isPaused = true {
-        didSet {
-            if isPaused {
-                lastTick = nil
-            } else if oldValue {
-                countdown = Self.countdownLength
-            }
-        }
+    var isPaused: Bool {
+        get { clock.isPaused }
+        set { clock.isPaused = newValue }
     }
     /// Takes effect straight away, even mid-match.
     var difficulty = Difficulty.standard {
@@ -40,7 +36,6 @@ final class PongGame {
     /// Takes effect straight away, even mid-match.
     var playerCount = PlayerCount.standard
     private var computer = ComputerOpponent()
-    @ObservationIgnored private var lastTick: Date?
     /// Called once when a match is decided, with the side that won.
     @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
     /// Where the player last aimed while the paddles were frozen; applied when play starts.
@@ -57,37 +52,26 @@ final class PongGame {
     func reset() {
         model = PongModel()
         computer = ComputerOpponent(difficulty: difficulty)
-        isPaused = true
-        countdown = 0
+        clock = MatchClock()
         lastPoint = nil
         lastWallHit = nil
-        lastTick = nil
         pendingAim = nil
         pendingLeftAim = nil
     }
 
     func tick(now: Date) {
-        guard !isPaused else {
-            lastTick = nil
+        let interval: TimeInterval
+        switch clock.advance(to: now) {
+        case .waiting, .countingDown:
             return
-        }
-        // The first frame after a pause only starts the clock, so the ball never jumps.
-        guard let lastTick else {
-            self.lastTick = now
+        case .countdownFinished:
+            if let pendingAim { setPlayerPaddle(y: pendingAim) }
+            if let pendingLeftAim { model.computerY = Self.clampedPaddle(pendingLeftAim) }
+            pendingAim = nil
+            pendingLeftAim = nil
             return
-        }
-        self.lastTick = now
-        let elapsed = now.timeIntervalSince(lastTick)
-        let interval = min(elapsed, PongModel.maxStep)
-        guard countdown <= 0 else {
-            countdown = max(countdown - elapsed, 0)
-            if countdown <= 0 {
-                if let pendingAim { setPlayerPaddle(y: pendingAim) }
-                if let pendingLeftAim { model.computerY = Self.clampedPaddle(pendingLeftAim) }
-                pendingAim = nil
-                pendingLeftAim = nil
-            }
-            return
+        case .playing(let step):
+            interval = step
         }
         if playerCount == .one {
             model.computerY = computer.nextPaddleY(current: model.computerY, ball: model.ball, interval: interval)
@@ -108,7 +92,7 @@ final class PongGame {
         if let winner = model.winner {
             onMatchEnd?(winner)
         } else {
-            countdown = Self.countdownLength
+            clock.startCountdown()
         }
     }
 
