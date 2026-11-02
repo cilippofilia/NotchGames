@@ -57,7 +57,7 @@ struct PongView: View {
             isFocused = true
         }
         .accessibilityElement()
-        .accessibilityLabel("Pong")
+        .accessibilityLabel("pong")
         .accessibilityValue("You \(game.model.playerScore), computer \(game.model.computerScore)")
     }
 

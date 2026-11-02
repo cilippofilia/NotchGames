@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// "Move here to play" while paused, or the result with a way to play again.
+/// "move here to play" while paused, or the result with a way to play again. All lowercase, the game's style.
 struct PongMessageView: View {
     let game: PongGame
 
@@ -17,17 +17,17 @@ struct PongMessageView: View {
             Spacer()
             Spacer()
             if let winner = game.model.winner {
-                Text(winner == .player ? "You win" : "Computer wins")
+                Text(winner == .player ? "you win" : "computer wins")
                     .font(.system(.title, design: .monospaced))
                     .bold()
                     .foregroundStyle(winner == .player ? Palette.paddle : Palette.ball)
-                Button("Play again") {
+                Button("play again") {
                     game.reset()
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(Palette.paddle.opacity(0.4))
             } else if game.isPaused {
-                Text("Move here to play")
+                Text("move here to play")
                     .font(.system(.headline, design: .monospaced))
                     .foregroundStyle(.secondary)
             }

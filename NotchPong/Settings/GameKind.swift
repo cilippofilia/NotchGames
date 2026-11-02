@@ -5,7 +5,10 @@
 //  Created by Filippo Cilia on 11/2/26.
 //
 
+import Foundation
+
 /// Which game the panel plays. Only Pong for now; air hockey is planned for v1.1.
+/// Game names are lowercase, matching the in-game style.
 nonisolated enum GameKind: String, CaseIterable, Identifiable {
     case pong
 
@@ -17,7 +20,7 @@ nonisolated enum GameKind: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .pong: String(localized: "Pong")
+        case .pong: String(localized: "pong")
         }
     }
 }
