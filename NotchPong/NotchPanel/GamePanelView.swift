@@ -16,7 +16,8 @@ struct GamePanelView: View {
         let length = state.hangingLength
         let shape = UnevenRoundedRectangle(
             bottomLeadingRadius: DropGeometry.cornerRadius,
-            bottomTrailingRadius: DropGeometry.cornerRadius
+            bottomTrailingRadius: DropGeometry.cornerRadius,
+            style: .continuous
         )
         // Neon and controls fade in as the drip turns into the panel.
         let solidity = DropGeometry.solidity(forLength: length)

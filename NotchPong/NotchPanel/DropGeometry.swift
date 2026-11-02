@@ -10,7 +10,7 @@ import CoreGraphics
 /// Size and position of the black drop hanging from the notch: a narrow drip that grows into the game panel.
 nonisolated enum DropGeometry {
     static let dripWidth: CGFloat = 28
-    static let cornerRadius: CGFloat = 16
+    static let cornerRadius: CGFloat = 28
     /// Hanging length, past a full drip, over which the drip becomes the panel.
     private static let morphLength: CGFloat = 200
 
