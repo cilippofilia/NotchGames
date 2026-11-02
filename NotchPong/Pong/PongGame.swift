@@ -80,7 +80,11 @@ final class PongGame {
         let computerScoreBefore = model.computerScore
         let ballBefore = model.ball.position
         model.step(by: interval)
-        if let bounce = model.wallBounce { lastWallHit = WallHit(position: bounce, time: now) }
+        if let bounce = model.wallBounce {
+            // Court y runs down, so the top wall (y = 0) sends its spark down.
+            let inward = CGVector(dx: 0, dy: bounce.y == 0 ? 1 : -1)
+            lastWallHit = WallHit(position: bounce, inward: inward, time: now)
+        }
         guard model.playerScore != playerScoreBefore || model.computerScore != computerScoreBefore else { return }
         let side: PongSide = model.playerScore != playerScoreBefore ? .player : .computer
         let exitY = min(max(ballBefore.y, 0), PongModel.courtSize.height)

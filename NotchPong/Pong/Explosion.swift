@@ -27,17 +27,16 @@ nonisolated enum Explosion {
 
     /// The top wall is at y = 0 (court y runs down), so its spark flies down; the bottom wall's flies up.
     static func wallSpark(age: TimeInterval, hitTop: Bool) -> [ExplosionParticle] {
-        burst(
-            age: age,
-            duration: sparkDuration,
-            inward: CGVector(dx: 0, dy: hitTop ? 1 : -1),
-            count: 6,
-            reach: 0.07
-        )
+        spark(age: age, inward: CGVector(dx: 0, dy: hitTop ? 1 : -1))
+    }
+
+    /// A small spark off any wall, flying back into the court along `inward`.
+    static func spark(age: TimeInterval, inward: CGVector) -> [ExplosionParticle] {
+        burst(age: age, duration: sparkDuration, inward: inward, count: 6, reach: 0.07)
     }
 
     /// Pieces spread across a fan around `inward`, fast at first, then slowing as they fade.
-    /// Sideways bursts are points and mix pink with teal; up/down ones are wall sparks and stay teal.
+    /// Big bursts are points and mix pink with teal; small sparks stay teal.
     private static func burst(
         age: TimeInterval,
         duration: TimeInterval,
@@ -45,7 +44,7 @@ nonisolated enum Explosion {
         count: Int,
         reach: CGFloat
     ) -> [ExplosionParticle] {
-        let alternatesColor = inward.dx != 0
+        let alternatesColor = duration == Self.duration
         guard age >= 0, age < duration else { return [] }
         let progress = age / duration
         let travel = reach * CGFloat(1 - pow(1 - progress, 3))

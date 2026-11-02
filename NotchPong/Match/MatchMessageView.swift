@@ -1,5 +1,5 @@
 //
-//  PongMessageView.swift
+//  MatchMessageView.swift
 //  NotchPong
 //
 //  Created by Filippo Cilia on 11/2/26.
@@ -8,30 +8,31 @@
 import SwiftUI
 
 /// "move here to play" while paused, or the result with a way to play again. All lowercase, the game's style.
-struct PongMessageView: View {
-    let game: PongGame
+struct MatchMessageView: View {
+    let winner: PongSide?
+    let isPaused: Bool
+    let playerCount: PlayerCount
+    let onPlayAgain: () -> Void
 
     var body: some View {
         // Two-thirds down the court, clear of the serve in the middle.
         VStack {
             Spacer()
             Spacer()
-            if let winner = game.model.winner {
-                Text(Self.resultText(winner: winner, players: game.playerCount))
+            if let winner {
+                Text(Self.resultText(winner: winner, players: playerCount))
                     .font(.system(.title, design: .monospaced))
                     .bold()
                     .foregroundStyle(winner == .player ? Palette.paddle : Palette.ball)
-                if game.playerCount == .one {
+                if playerCount == .one {
                     Text("streak \(StatsStore.shared.stats.currentStreak)")
                         .font(.system(.headline, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
-                Button("play again") {
-                    game.reset()
-                }
+                Button("play again", action: onPlayAgain)
                 .buttonStyle(.borderedProminent)
                 .tint(Palette.paddle.opacity(0.4))
-            } else if game.isPaused {
+            } else if isPaused {
                 Text("move here to play")
                     .font(.system(.headline, design: .monospaced))
                     .foregroundStyle(.secondary)

@@ -19,7 +19,6 @@ struct PongView: View {
     @FocusState private var isFocused: Bool
 
     private static let keyStep: CGFloat = 0.06
-    private static let waitingBallOpacity = 0.4
 
     var body: some View {
         TimelineView(.animation(paused: game.isPaused)) { timeline in
@@ -31,10 +30,19 @@ struct PongView: View {
             }
         }
         .overlay {
-            PongCountdownView(game: game, panelHeight: size.height)
+            MatchCountdownView(
+                countdown: game.countdown,
+                isRunning: !game.isPaused && game.model.winner == nil,
+                panelHeight: size.height
+            )
         }
         .overlay {
-            PongMessageView(game: game)
+            MatchMessageView(
+                winner: game.model.winner,
+                isPaused: game.isPaused,
+                playerCount: game.playerCount,
+                onPlayAgain: game.reset
+            )
         }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
         .onChange(of: state.panelPointer) { _, pointer in
@@ -94,14 +102,7 @@ struct PongView: View {
         let paddleWidth: CGFloat = 5
         let paddleHeight = PongModel.paddleHeight * scaleY
 
-        var centerLine = Path()
-        centerLine.move(to: CGPoint(x: court.midX, y: court.minY))
-        centerLine.addLine(to: CGPoint(x: court.midX, y: court.maxY))
-        context.stroke(
-            centerLine,
-            with: .color(Palette.paddle.opacity(0.35)),
-            style: StrokeStyle(lineWidth: 2, dash: [6, 8])
-        )
+        CourtEffects.drawCenterLine(in: court, context: &context)
 
         // Each paddle sits just behind its face: left of it for the computer, right of it for the player.
         let computerFace = court.minX + PongModel.paddleInset * scaleX
@@ -118,19 +119,17 @@ struct PongView: View {
                 cornerSize: CGSize(width: paddleWidth / 2, height: paddleWidth / 2)
             )
         }
-        glow(paddles, color: Palette.paddle, in: &context)
+        CourtEffects.glow(paddles, color: Palette.paddle, in: &context)
 
         drawBall(model.ball, dimmed: game.isPaused || game.countdown > 0, in: court, context: &context)
 
-        if let hit = game.lastWallHit {
-            drawWallSpark(for: hit, age: date.timeIntervalSince(hit.time), in: court, context: &context)
-        }
-
-        let pointAge = game.lastPoint.map { date.timeIntervalSince($0.time) }
-        if let point = game.lastPoint, let pointAge {
-            drawExplosion(for: point, age: pointAge, in: court, context: &context)
-        }
-        drawScores(model, scorer: game.lastPoint?.side, pointAge: pointAge, in: court, context: &context)
+        CourtEffects.drawEvents(
+            (game.lastWallHit, game.lastPoint),
+            scores: (computer: model.computerScore, player: model.playerScore),
+            at: date,
+            in: court,
+            context: &context
+        )
     }
 
     /// Dimmed while waiting (paused or counting down), so its position still shows.
@@ -141,96 +140,6 @@ struct PongView: View {
         let center = CGPoint(x: court.minX + ball.position.x * scaleX, y: court.minY + ball.position.y * scaleY)
         let bounds = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
         let shape = Path(ellipseIn: bounds)
-        glow(shape, color: Palette.ball.opacity(dimmed ? Self.waitingBallOpacity : 1), in: &context)
-    }
-
-    /// A little teal spark where the ball touched the top or bottom wall.
-    private static func drawWallSpark(
-        for hit: WallHit,
-        age: TimeInterval,
-        in court: CGRect,
-        context: inout GraphicsContext
-    ) {
-        let particles = Explosion.wallSpark(age: age, hitTop: hit.position.y == 0)
-        guard let opacity = particles.first?.opacity else { return }
-        let scaleX = court.width / PongModel.courtSize.width
-        let scaleY = court.height / PongModel.courtSize.height
-        let piece = max(court.height * 0.014, 3)
-        var sparks = Path()
-        for particle in particles {
-            let center = CGPoint(
-                x: court.minX + (hit.position.x + particle.offset.dx) * scaleX,
-                y: court.minY + (hit.position.y + particle.offset.dy) * scaleY
-            )
-            sparks.addRect(CGRect(x: center.x - piece / 2, y: center.y - piece / 2, width: piece, height: piece))
-        }
-        glow(sparks, color: Palette.paddle.opacity(opacity), in: &context)
-    }
-
-    /// Pixels bursting back into the court from where the ball went out.
-    private static func drawExplosion(
-        for point: PointEvent,
-        age: TimeInterval,
-        in court: CGRect,
-        context: inout GraphicsContext
-    ) {
-        let particles = Explosion.particles(age: age, side: point.side)
-        guard let opacity = particles.first?.opacity else { return }
-        let scaleX = court.width / PongModel.courtSize.width
-        let scaleY = court.height / PongModel.courtSize.height
-        let piece = max(court.height * 0.022, 4)
-        var pink = Path()
-        var teal = Path()
-        for particle in particles {
-            let center = CGPoint(
-                x: court.minX + (point.position.x + particle.offset.dx) * scaleX,
-                y: court.minY + (point.position.y + particle.offset.dy) * scaleY
-            )
-            let square = CGRect(x: center.x - piece / 2, y: center.y - piece / 2, width: piece, height: piece)
-            if particle.isPink {
-                pink.addRect(square)
-            } else {
-                teal.addRect(square)
-            }
-        }
-        glow(pink, color: Palette.ball.opacity(opacity), in: &context)
-        glow(teal, color: Palette.paddle.opacity(opacity), in: &context)
-    }
-
-    /// Computer's score on the left, the player's on the right; the one that just changed pops up briefly.
-    private static func drawScores(
-        _ model: PongModel,
-        scorer: PongSide?,
-        pointAge: TimeInterval?,
-        in court: CGRect,
-        context: inout GraphicsContext
-    ) {
-        let pop = ScorePulse.scale(age: pointAge)
-        let offset = court.width * 0.08
-        let top = court.minY + 12
-        drawScore(model.computerScore, at: CGPoint(x: court.midX - offset, y: top),
-                  scale: scorer == .computer ? pop : 1, context: &context)
-        drawScore(model.playerScore, at: CGPoint(x: court.midX + offset, y: top),
-                  scale: scorer == .player ? pop : 1, context: &context)
-    }
-
-    private static func drawScore(_ value: Int, at point: CGPoint, scale: CGFloat, context: inout GraphicsContext) {
-        let text = Text("\(value)")
-            .font(.system(.title3, design: .monospaced))
-            .bold()
-            .foregroundStyle(Palette.paddle.opacity(0.8))
-        context.drawLayer { layer in
-            layer.translateBy(x: point.x, y: point.y)
-            layer.scaleBy(x: scale, y: scale)
-            layer.draw(text, at: .zero)
-        }
-    }
-
-    private static func glow(_ path: Path, color: Color, in context: inout GraphicsContext) {
-        context.drawLayer { layer in
-            layer.addFilter(.shadow(color: color, radius: 8))
-            layer.addFilter(.shadow(color: color, radius: 2))
-            layer.fill(path, with: .color(color))
-        }
+        CourtEffects.glow(shape, color: Palette.ball.opacity(dimmed ? CourtEffects.waitingOpacity : 1), in: &context)
     }
 }

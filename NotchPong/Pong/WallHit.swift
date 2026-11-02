@@ -8,8 +8,10 @@
 import CoreGraphics
 import Foundation
 
-/// The ball just bounced off the top or bottom wall: where (court units) and when, for its spark.
+/// The ball or puck just bounced off a wall: where (court units), which way is back into the court, and when,
+/// for its spark.
 nonisolated struct WallHit: Equatable {
     let position: CGPoint
+    let inward: CGVector
     let time: Date
 }
