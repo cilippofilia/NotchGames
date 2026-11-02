@@ -80,7 +80,7 @@ nonisolated struct DropShape: Shape {
             return [(CGPoint(x: edge, y: attach.y + depth), CGPoint(x: edge, y: attach.y))]
         }
         // Body wider than the notch: curve out of the notch, along a flat edge, then round over into the body.
-        let neck = min(DropGeometry.cornerRadius, outward / 2, maxY / 2)
+        let neck = min(DropGeometry.neckRadius, outward / 2, maxY / 2)
         let shoulder = min(DropGeometry.cornerRadius, outward - neck, maxY - neck)
         let flatY = attach.y + neck
         return [
