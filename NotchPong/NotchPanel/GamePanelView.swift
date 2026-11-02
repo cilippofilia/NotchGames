@@ -22,11 +22,7 @@ struct GamePanelView: View {
         let solidity = DropGeometry.solidity(forLength: length)
 
         VStack(spacing: 0) {
-            GreetingView()
-                .frame(maxWidth: DropGeometry.width(forLength: length) * 0.7)
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .opacity(solidity)
+            Color.clear
 
             Capsule()
                 .fill(Palette.paddle.opacity(0.4))
