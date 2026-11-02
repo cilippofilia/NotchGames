@@ -139,7 +139,8 @@ struct PongView: View {
         let scaleY = court.height / PongModel.courtSize.height
         let radius = max(PongModel.ballRadius * scaleY, 4)
         let center = CGPoint(x: court.minX + ball.position.x * scaleX, y: court.minY + ball.position.y * scaleY)
-        let shape = Path(ellipseIn: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2))
+        let bounds = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
+        let shape = Path(ellipseIn: bounds)
         glow(shape, color: Palette.ball.opacity(dimmed ? Self.waitingBallOpacity : 1), in: &context)
     }
 
