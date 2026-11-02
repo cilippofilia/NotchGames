@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-/// The app's Settings window: how hard the computer plays and how forgiving the pause edge is.
-/// The game picker comes back once there's more than one game (`GameKind`).
+/// The app's Settings window: the game, players and difficulty, the panel, and the player's record.
 struct SettingsView: View {
+    @AppStorage(GameKind.storageKey) private var game = GameKind.standard
     @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
     @AppStorage(GutterSize.storageKey) private var gutter = GutterSize.standard
     @AppStorage(PanelSize.storageKey) private var panelSize = PanelSize.standard
@@ -18,13 +18,20 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Picker("game", selection: $game) {
+                ForEach(GameKind.allCases) { kind in
+                    Text(kind.title).tag(kind)
+                }
+            }
+            .pickerStyle(.menu)
+
             Picker(selection: $players) {
                 ForEach(PlayerCount.allCases) { count in
                     Text(count.title).tag(count)
                 }
             } label: {
                 Text("players")
-                Text("2 players: left on W/S, right on the pointer or arrows")
+                Text("2 players: left on W/S (W/A/S/D in air hockey), right on the pointer or arrows")
             }
             .pickerStyle(.segmented)
 

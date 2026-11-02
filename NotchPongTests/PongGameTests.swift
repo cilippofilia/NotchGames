@@ -215,4 +215,13 @@ struct PongGameTests {
         #expect(PlayerCount.standard == .one)
         #expect(PongGame().playerCount == .one)
     }
+
+    @Test func courtMapsPanelPointsToCourtUnits() {
+        let size = CGSize(width: 640, height: 400)
+        let court = CourtLayout.rect(in: size)
+        #expect(CourtLayout.courtPoint(forPanelPoint: CGPoint(x: court.minX, y: court.minY), in: size) == .zero)
+        let corner = CourtLayout.courtPoint(forPanelPoint: CGPoint(x: court.maxX, y: court.maxY), in: size)
+        #expect(abs(corner.x - PongModel.courtSize.width) < 0.0001)
+        #expect(abs(corner.y - PongModel.courtSize.height) < 0.0001)
+    }
 }

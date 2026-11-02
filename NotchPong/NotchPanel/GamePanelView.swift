@@ -34,7 +34,7 @@ struct GamePanelView: View {
                 .accessibilityAction { onClose() }
         }
         .background {
-            PongView(state: state)
+            GameView(state: state)
                 .opacity(solidity)
         }
         .frame(

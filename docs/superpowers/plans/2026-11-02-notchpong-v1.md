@@ -367,7 +367,7 @@ This is the riskiest task. Check panel level and click handling on a real notche
 
 ---
 
-## v1.1 (after v1 ships, user requested)
+## v1.1 (built 2026-11-02 on feat/v1.1)
 
 These each get their own spec/plan pass when started. They're listed here so v1 code leaves room for them, not built now.
 

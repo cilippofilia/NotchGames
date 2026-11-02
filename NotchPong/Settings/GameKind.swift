@@ -7,10 +7,11 @@
 
 import Foundation
 
-/// Which game the panel plays. Only Pong for now; air hockey is planned for v1.1.
+/// Which game the panel plays.
 /// Game names are lowercase, matching the in-game style.
 nonisolated enum GameKind: String, CaseIterable, Identifiable {
     case pong
+    case airHockey
 
     static let standard = GameKind.pong
     /// Where the choice is saved in user defaults.
@@ -21,6 +22,7 @@ nonisolated enum GameKind: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .pong: String(localized: "pong")
+        case .airHockey: String(localized: "air hockey")
         }
     }
 }

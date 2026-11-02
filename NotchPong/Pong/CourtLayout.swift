@@ -29,4 +29,14 @@ nonisolated enum CourtLayout {
         guard court.height > 0 else { return 0.5 }
         return (panelY - court.minY) / court.height * PongModel.courtSize.height
     }
+
+    /// Converts a pointer position in panel points to court units (x 0…1.6 left to right, y 0…1 top to bottom).
+    static func courtPoint(forPanelPoint point: CGPoint, in size: CGSize) -> CGPoint {
+        let court = rect(in: size)
+        guard court.width > 0, court.height > 0 else { return CGPoint(x: 0.8, y: 0.5) }
+        return CGPoint(
+            x: (point.x - court.minX) / court.width * PongModel.courtSize.width,
+            y: courtY(forPanelY: point.y, in: size)
+        )
+    }
 }
