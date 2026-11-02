@@ -29,7 +29,7 @@ struct GamePanelView: View {
                 .frame(width: 30, height: 4)
                 .frame(width: NotchPanelController.handleSize.width, height: NotchPanelController.handleSize.height)
                 .opacity(solidity)
-                .accessibilityLabel("Close")
+                .accessibilityLabel("close")
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAction { onClose() }
         }

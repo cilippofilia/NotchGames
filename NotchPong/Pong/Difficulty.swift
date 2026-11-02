@@ -23,10 +23,10 @@ nonisolated enum Difficulty: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .easy: String(localized: "Easy")
-        case .moderate: String(localized: "Moderate")
-        case .hard: String(localized: "Hard")
-        case .expert: String(localized: "Expert")
+        case .easy: String(localized: "easy")
+        case .moderate: String(localized: "moderate")
+        case .hard: String(localized: "hard")
+        case .expert: String(localized: "expert")
         }
     }
 

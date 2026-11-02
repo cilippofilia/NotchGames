@@ -58,7 +58,7 @@ struct PongView: View {
         }
         .accessibilityElement()
         .accessibilityLabel("pong")
-        .accessibilityValue("You \(game.model.playerScore), computer \(game.model.computerScore)")
+        .accessibilityValue("you \(game.model.playerScore), computer \(game.model.computerScore)")
     }
 
     private func follow(_ pointer: CGPoint?) {

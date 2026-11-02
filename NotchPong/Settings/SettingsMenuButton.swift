@@ -13,7 +13,7 @@ struct SettingsMenuButton: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
-        Button("Settings…") {
+        Button("settings…") {
             NSApplication.shared.activate()
             openSettings()
         }

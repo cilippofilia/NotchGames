@@ -12,11 +12,11 @@ struct NotchPongApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("NotchPong", systemImage: "gamecontroller") {
-            Button("Play Pong") { appDelegate.controller?.playFromMenu() }
+        MenuBarExtra("notchpong", systemImage: "gamecontroller") {
+            Button("play pong") { appDelegate.controller?.playFromMenu() }
             SettingsMenuButton()
             Divider()
-            Button("Quit NotchPong") { NSApplication.shared.terminate(nil) }
+            Button("quit notchpong") { NSApplication.shared.terminate(nil) }
                 .keyboardShortcut("q")
         }
 

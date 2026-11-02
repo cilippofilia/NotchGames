@@ -14,21 +14,21 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Picker("Game", selection: $game) {
+            Picker("game", selection: $game) {
                 ForEach(GameKind.allCases) { kind in
                     Text(kind.title).tag(kind)
                 }
             }
             .pickerStyle(.menu)
 
-            Picker("Difficulty", selection: $difficulty) {
+            Picker("difficulty", selection: $difficulty) {
                 ForEach(Difficulty.allCases) { level in
                     Text(level.title).tag(level)
                 }
             }
             .pickerStyle(.segmented)
 
-            Text("How fast the computer moves and how quickly it reacts. Changes apply right away.")
+            Text("how fast the computer moves and how quickly it reacts. changes apply right away.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
