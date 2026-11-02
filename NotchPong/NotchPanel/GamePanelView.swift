@@ -14,7 +14,9 @@ struct GamePanelView: View {
 
     var body: some View {
         let length = state.hangingLength
-        let shape = DropShape(length: length)
+        let notchWidth = state.notchWidth
+        let dropOffset = state.dropOffset
+        let shape = DropShape(length: length, notchWidth: notchWidth, dropOffset: dropOffset)
         // Neon and controls fade in as the drip turns into the panel.
         let solidity = DropGeometry.solidity(forLength: length)
 
@@ -30,7 +32,10 @@ struct GamePanelView: View {
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAction { onClose() }
         }
-        .frame(width: DropGeometry.frameWidth(forLength: length), height: length)
+        .frame(
+            width: DropGeometry.frameWidth(forLength: length, notchWidth: notchWidth, dropOffset: dropOffset),
+            height: length
+        )
         .background(shape.fill(Palette.background))
         .overlay {
             // Inner glow fading out toward the top, so the edge against the notch stays dark.

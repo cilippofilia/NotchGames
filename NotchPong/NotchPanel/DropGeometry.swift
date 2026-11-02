@@ -12,6 +12,10 @@ nonisolated enum DropGeometry {
     static let dripWidth: CGFloat = 28
     /// The drip is wider where it clings to the notch than at its bulb, which makes it a tear.
     static let dripTopWidth: CGFloat = 44
+    /// Keeps the top edge off the notch's own rounded bottom corners.
+    static let attachInset: CGFloat = 8
+    /// Hanging length, past a full drip, over which the top widens from the tear to the whole notch.
+    private static let attachLength: CGFloat = 80
     static let cornerRadius: CGFloat = 28
     /// Hanging length, past a full drip, over which the drip becomes the panel.
     private static let morphLength: CGFloat = 200
@@ -23,17 +27,18 @@ nonisolated enum DropGeometry {
         return dripWidth + max(length - Magnet.maxLength, 0) * growth
     }
 
-    /// Width of the flat top edge against the notch: wider than the body for the drip, narrower for the panel,
-    /// where the difference becomes its rounded top corners.
-    static func topWidth(forLength length: CGFloat) -> CGFloat {
-        let panelTop = max(width(forLength: length) - 2 * cornerRadius, 0)
-        let amount = solidity(forLength: length)
-        return dripTopWidth + (panelTop - dripTopWidth) * amount
+    /// Width of the top edge stuck to the notch: a narrow tear at rest, widening to the whole notch once pulled,
+    /// so it looks like the notch itself is being stretched down. Centered on the body, and never past the notch.
+    static func attachWidth(forLength length: CGFloat, notchWidth: CGFloat, dropOffset: CGFloat) -> CGFloat {
+        let room = notchWidth - 2 * attachInset - 2 * abs(offset(forLength: length, dropOffset: dropOffset))
+        let progress = min(max((length - Magnet.maxLength) / attachLength, 0), 1)
+        let wanted = dripTopWidth + (notchWidth - 2 * attachInset - dripTopWidth) * progress
+        return max(min(wanted, room), 0)
     }
 
-    /// Width the drop needs to be drawn in: its body, or its top edge while that is wider.
-    static func frameWidth(forLength length: CGFloat) -> CGFloat {
-        max(width(forLength: length), topWidth(forLength: length))
+    /// Width needed to draw the drop: its body, or its top edge while that is wider.
+    static func frameWidth(forLength length: CGFloat, notchWidth: CGFloat, dropOffset: CGFloat) -> CGFloat {
+        max(width(forLength: length), attachWidth(forLength: length, notchWidth: notchWidth, dropOffset: dropOffset))
     }
 
     /// Starts under the pointer like the drip, then slides back to the notch's center.

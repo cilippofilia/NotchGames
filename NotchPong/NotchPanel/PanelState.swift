@@ -19,6 +19,7 @@ final class PanelState {
     /// How far the liquid currently hangs below the notch, and where the drip it grew from was.
     var hangingLength: CGFloat = 0
     var dropOffset: CGFloat = 0
+    var notchWidth: CGFloat = 0
     /// Changes every time the panel opens, so the game knows to start a fresh match.
     private(set) var matchID = UUID()
 

@@ -158,7 +158,11 @@ final class NotchPanelController: NSObject {
     /// The drop as currently drawn, in screen coordinates.
     private func dropRect(in geometry: NotchGeometry) -> CGRect {
         let length = state.hangingLength
-        let width = DropGeometry.frameWidth(forLength: length)
+        let width = DropGeometry.frameWidth(
+            forLength: length,
+            notchWidth: geometry.notchRect.width,
+            dropOffset: state.dropOffset
+        )
         let offset = DropGeometry.offset(forLength: length, dropOffset: state.dropOffset)
         return CGRect(
             x: geometry.notchRect.midX + offset - width / 2,
@@ -214,6 +218,7 @@ final class NotchPanelController: NSObject {
             displayLink?.isPaused = true
             return
         }
+        state.notchWidth = geometry.notchRect.width
         let panel = overlay ?? makeOverlay()
         let width = DropGeometry.width(forLength: Self.overlayHeight)
         panel.setFrame(

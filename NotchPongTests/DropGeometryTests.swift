@@ -28,19 +28,27 @@ struct DropGeometryTests {
         #expect(DropGeometry.width(forLength: 0) == DropGeometry.dripWidth)
     }
 
-    @Test func dripClingsWithAWiderTop() {
-        #expect(DropGeometry.topWidth(forLength: Magnet.maxLength) == DropGeometry.dripTopWidth)
-        #expect(DropGeometry.frameWidth(forLength: Magnet.maxLength) == DropGeometry.dripTopWidth)
+    @Test func restingDripHasANarrowTop() {
+        let width = DropGeometry.attachWidth(forLength: Magnet.maxLength, notchWidth: 190, dropOffset: 30)
+        #expect(width == DropGeometry.dripTopWidth)
     }
 
-    @Test func panelTopLeavesRoomForRoundedCorners() {
-        let length = PullSizing.maxBodyHeight
-        let width = DropGeometry.width(forLength: length)
-        #expect(DropGeometry.topWidth(forLength: length) == width - 2 * DropGeometry.cornerRadius)
-        #expect(DropGeometry.frameWidth(forLength: length) == width)
+    @Test func pulledDropHangsFromTheWholeNotch() {
+        let width = DropGeometry.attachWidth(forLength: 300, notchWidth: 190, dropOffset: 0)
+        #expect(width == 190 - 2 * DropGeometry.attachInset)
     }
 
-    @Test func topChangesWithoutJumps() {
-        #expect(abs(DropGeometry.topWidth(forLength: 140) - DropGeometry.topWidth(forLength: 140.5)) < 2)
+    @Test(arguments: [0, 40, 80, 120, 160, 240, 460])
+    func topNeverReachesPastTheNotch(length: Int) {
+        let length = CGFloat(length)
+        let half = DropGeometry.attachWidth(forLength: length, notchWidth: 190, dropOffset: 49) / 2
+        let offset = DropGeometry.offset(forLength: length, dropOffset: 49)
+        #expect(half + abs(offset) <= 95 - DropGeometry.attachInset + 0.001)
+    }
+
+    @Test func frameHoldsBothTopAndBody() {
+        let frame = DropGeometry.frameWidth(forLength: 60, notchWidth: 190, dropOffset: 30)
+        #expect(frame >= DropGeometry.width(forLength: 60))
+        #expect(frame >= DropGeometry.attachWidth(forLength: 60, notchWidth: 190, dropOffset: 30))
     }
 }
