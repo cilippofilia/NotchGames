@@ -18,7 +18,7 @@ struct ComputerOpponentTests {
         var opponent = ComputerOpponent(reactionDelay: 0)
         let next = opponent.nextPaddleY(current: 0.5, ball: incoming(atY: 0.9), interval: 0.1)
         #expect(next > 0.5)
-        #expect(next - 0.5 <= 0.075 + 0.0001)
+        #expect(next - 0.5 <= opponent.maxSpeed * 0.1 + 0.0001)
     }
 
     @Test func returnsToCenterWhenBallMovesAway() {

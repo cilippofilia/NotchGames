@@ -11,8 +11,8 @@ import Foundation
 /// Moves the left paddle toward where it expected the ball to arrive a moment ago, bounces included,
 /// at a capped speed, so it reads angled shots but can still be beaten.
 nonisolated struct ComputerOpponent {
-    var maxSpeed: CGFloat = 0.75
-    var reactionDelay: TimeInterval = 0.12
+    var maxSpeed: CGFloat = 0.55
+    var reactionDelay: TimeInterval = 0.2
     /// Doesn't twitch for differences smaller than this.
     var deadZone: CGFloat = 0.02
 
