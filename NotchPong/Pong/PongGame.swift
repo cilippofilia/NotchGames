@@ -103,6 +103,18 @@ final class PongGame {
         aimPlayerPaddle(y: (pendingAim ?? model.playerY) + delta)
     }
 
+    /// The pointer moved: `courtY` is nil once it's beyond the gutter. Only the panel itself starts a paused game;
+    /// the gutter just keeps a running one from pausing when the pointer slips past the edge.
+    func pointerMoved(toCourtY courtY: CGFloat?, insidePanel: Bool) {
+        guard let courtY else {
+            isPaused = true
+            return
+        }
+        if isPaused, !insidePanel { return }
+        aimPlayerPaddle(y: courtY)
+        if model.winner == nil { isPaused = false }
+    }
+
     /// Player input: moves the paddle during play, or remembers the aim for when play starts.
     func aimPlayerPaddle(y height: CGFloat) {
         if paddlesCanMove {

@@ -63,12 +63,11 @@ struct PongView: View {
     }
 
     private func follow(_ pointer: CGPoint?) {
-        guard let pointer else {
-            game.isPaused = true
-            return
-        }
-        game.aimPlayerPaddle(y: CourtLayout.courtY(forPanelY: pointer.y, in: size))
-        if game.model.winner == nil { game.isPaused = false }
+        let insidePanel = pointer.map { CGRect(origin: .zero, size: size).contains($0) } ?? false
+        game.pointerMoved(
+            toCourtY: pointer.map { CourtLayout.courtY(forPanelY: $0.y, in: size) },
+            insidePanel: insidePanel
+        )
     }
 
     private static func draw(_ game: PongGame, at date: Date, in context: inout GraphicsContext, size: CGSize) {

@@ -151,4 +151,30 @@ struct PongGameTests {
         game.aimPlayerPaddle(y: 0.3)
         #expect(game.model.playerY == 0.3)
     }
+
+    @Test func pointerInTheGutterDoesNotStartAPausedGame() {
+        let game = PongGame()
+        game.pointerMoved(toCourtY: 0.5, insidePanel: false)
+        #expect(game.isPaused)
+    }
+
+    @Test func pointerInsideThePanelStartsTheGame() {
+        let game = PongGame()
+        game.pointerMoved(toCourtY: 0.5, insidePanel: true)
+        #expect(!game.isPaused)
+    }
+
+    @Test func pointerInTheGutterKeepsARunningGameGoing() {
+        let game = PongGame()
+        game.pointerMoved(toCourtY: 0.5, insidePanel: true)
+        game.pointerMoved(toCourtY: 0.5, insidePanel: false)
+        #expect(!game.isPaused)
+    }
+
+    @Test func pointerBeyondTheGutterPauses() {
+        let game = PongGame()
+        game.pointerMoved(toCourtY: 0.5, insidePanel: true)
+        game.pointerMoved(toCourtY: nil, insidePanel: false)
+        #expect(game.isPaused)
+    }
 }
