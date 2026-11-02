@@ -21,6 +21,9 @@ struct PongMessageView: View {
                     .font(.system(.title, design: .monospaced))
                     .bold()
                     .foregroundStyle(winner == .player ? Palette.paddle : Palette.ball)
+                Text("streak \(StatsStore.shared.stats.currentStreak)")
+                    .font(.system(.headline, design: .monospaced))
+                    .foregroundStyle(.secondary)
                 Button("play again") {
                     game.reset()
                 }

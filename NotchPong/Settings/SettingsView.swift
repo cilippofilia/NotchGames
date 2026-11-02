@@ -21,6 +21,8 @@ struct SettingsView: View {
                 ForEach(Difficulty.allCases) { level in
                     Text(level.title).tag(level)
                 }
+
+            StatsSection(store: StatsStore.shared)
             } label: {
                 Text("difficulty")
                 Text("how fast and sharp the computer plays")

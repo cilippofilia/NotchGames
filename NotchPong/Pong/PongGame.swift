@@ -36,6 +36,8 @@ final class PongGame {
     var opponentSpeed: CGFloat { computer.maxSpeed }
     private var computer = ComputerOpponent()
     @ObservationIgnored private var lastTick: Date?
+    /// Called once when a match is decided, with the side that won.
+    @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
     /// Where the player last aimed while the paddles were frozen; applied when play starts.
     @ObservationIgnored private var pendingAim: CGFloat?
 
@@ -90,7 +92,11 @@ final class PongGame {
             position: CGPoint(x: side == .computer ? PongModel.courtSize.width : 0, y: exitY),
             time: now
         )
-        if model.winner == nil { countdown = Self.countdownLength }
+        if let winner = model.winner {
+            onMatchEnd?(winner)
+        } else {
+            countdown = Self.countdownLength
+        }
     }
 
     /// `y` in court units (0 top, 1 bottom); clamped so the paddle stays inside the court.

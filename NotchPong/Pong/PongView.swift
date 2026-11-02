@@ -56,6 +56,7 @@ struct PongView: View {
         }
         .onAppear {
             isFocused = true
+            game.onMatchEnd = { StatsStore.shared.record(winner: $0) }
         }
         .accessibilityElement()
         .accessibilityLabel("pong")
