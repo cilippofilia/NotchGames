@@ -16,6 +16,12 @@ struct PullTracker {
     private var previous: PointerSample?
     private var upwardVelocity: CGFloat = 0
 
+    /// Stops following the current press; the next pull needs a fresh press.
+    mutating func cancel() {
+        grabOffset = nil
+        previous = nil
+    }
+
     /// `anchorY` is the notch's bottom edge; the raw pull is how far below it the pointer is.
     mutating func handle(
         _ sample: PointerSample,

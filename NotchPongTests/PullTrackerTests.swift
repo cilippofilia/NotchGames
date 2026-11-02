@@ -66,4 +66,22 @@ struct PullTrackerTests {
         _ = feed(&tracker, height: 920, pressed: false, at: 0, grabZone: .some(nil))
         #expect(feed(&tracker, height: 920, pressed: true, at: 0.016, grabZone: .some(nil)) == .none)
     }
+
+    @Test func cancelledPullIgnoresTheRestOfThePress() {
+        var tracker = PullTracker()
+        _ = feed(&tracker, height: 920, pressed: false, at: 0)
+        _ = feed(&tracker, height: 920, pressed: true, at: 0.016)
+        tracker.cancel()
+        #expect(feed(&tracker, height: 800, pressed: true, at: 0.1) == .none)
+        #expect(feed(&tracker, height: 800, pressed: false, at: 0.2) == .none)
+    }
+
+    @Test func newPressAfterCancelGrabsAgain() {
+        var tracker = PullTracker()
+        _ = feed(&tracker, height: 920, pressed: false, at: 0)
+        _ = feed(&tracker, height: 920, pressed: true, at: 0.016)
+        tracker.cancel()
+        _ = feed(&tracker, height: 920, pressed: false, at: 0.1)
+        #expect(feed(&tracker, height: 920, pressed: true, at: 0.2) == .pull(0))
+    }
 }
