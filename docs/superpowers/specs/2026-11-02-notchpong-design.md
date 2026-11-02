@@ -39,7 +39,7 @@ User decision: these are out of v1 and go in the build plan as a v1.1 section.
 - **Close:** drag the panel back up into the notch.
 - **First game:** Pong against a computer opponent.
 - **Distribution:** Mac App Store eventually.
-- **Look: "Black + neon".** The panel is near-black (`#07070c`), so it blends into the notch. The paddles are teal (`#4dfcc4`) and glow, the ball is pink (`#ff4fa3`) and glows, and the center line is dashed. The panel has a faint teal outline glow and rounded bottom corners. A small handle bar sits at the bottom center.
+- **Look: "Black + neon".** The panel is pure black (`#000000`, user decision 2026-11-02), so it blends into the notch. The paddles are teal (`#4dfcc4`) and glow, the ball is pink (`#ff4fa3`) and glows, and the center line is dashed. The panel has a faint teal outline glow and all four corners rounded (continuous, 28 pt). A small handle bar sits at the bottom center.
 - **Shape:** a notch-width "neck" fills the menu bar height. Below the menu bar the panel widens into the court. The menu bar items on both sides stay visible.
 - **Size range:** the "short pull" size is the minimum and the "medium pull" size is the maximum. In the mockups, at roughly 300 pt of screen height, those were about 170×100 and 240×160. The builder should turn them into real point sizes that look right on a 14" MacBook Pro and keep the ~3:2 to 1.6:1 court ratio.
 

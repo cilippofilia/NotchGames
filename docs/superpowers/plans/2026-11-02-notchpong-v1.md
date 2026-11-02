@@ -16,7 +16,7 @@
 - No third-party frameworks. AppKit only for `NSPanel`/`NSScreen`/`NSEvent` work that SwiftUI can't do.
 - App Sandbox ON. No Accessibility, Input Monitoring or Screen Recording, and no `NSEvent.addGlobalMonitorForEvents`.
 - `LSUIElement = YES` (no Dock icon). `MenuBarExtra` with "Play Pong" and "Quit NotchPong".
-- Panel colors: background `#07070c`, paddles `#4dfcc4` with glow, ball `#ff4fa3` with glow, dashed center line, faint teal outline glow, rounded bottom corners, handle bar at bottom center.
+- Panel colors: background `#000000`, paddles `#4dfcc4` with glow, ball `#ff4fa3` with glow, dashed center line, faint teal outline glow, all corners rounded (continuous, 28 pt), handle bar at bottom center.
 - In the menu bar band, the panel is exactly notch-width. It must never cover menu bar items.
 - Size: body min 400×250 pt, max 640×400 pt (court ratio 1.6:1). These are the builder's conversion of the mockup's "short pull" and "medium pull" and are tunable constants.
 - First to 5 points wins. One computer difficulty. No sound.
