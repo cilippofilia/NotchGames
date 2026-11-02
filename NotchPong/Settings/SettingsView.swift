@@ -7,20 +7,13 @@
 
 import SwiftUI
 
-/// The app's Settings window: which game to play and how hard the computer plays.
+/// The app's Settings window: how hard the computer plays.
+/// The game picker comes back once there's more than one game (`GameKind`).
 struct SettingsView: View {
-    @AppStorage(GameKind.storageKey) private var game = GameKind.standard
     @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
 
     var body: some View {
         Form {
-            Picker("game", selection: $game) {
-                ForEach(GameKind.allCases) { kind in
-                    Text(kind.title).tag(kind)
-                }
-            }
-            .pickerStyle(.menu)
-
             Picker("difficulty", selection: $difficulty) {
                 ForEach(Difficulty.allCases) { level in
                     Text(level.title).tag(level)
