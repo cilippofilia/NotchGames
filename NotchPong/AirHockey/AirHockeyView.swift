@@ -150,10 +150,6 @@ struct AirHockeyView: View {
         let goalTop = court.minY + (AirHockeyModel.courtSize.height / 2 - AirHockeyModel.goalHalfHeight) * scaleY
         let goalBottom = court.minY + (AirHockeyModel.courtSize.height / 2 + AirHockeyModel.goalHalfHeight) * scaleY
 
-        var walls = Path()
-        walls.addRect(court)
-        context.stroke(walls, with: .color(Palette.paddle.opacity(0.15)), lineWidth: 1)
-
         let circleRadius = court.height * 0.15
         context.stroke(
             Path(ellipseIn: CGRect(
