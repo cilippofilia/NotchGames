@@ -119,11 +119,21 @@ final class NotchPanelController: NSObject {
         // Observation fires on every write, so only write real changes to avoid redrawing every frame.
         let length = max(spring.value, 0)
         if state.hangingLength != length { state.hangingLength = length }
+        updatePanelPointer(location, in: anchor)
 
         // Catch clicks only on the drop itself, so the overlay never blocks the apps underneath.
         let ignoresMouse = state.phase != .dragging && !dropRect(in: anchor).contains(location)
         if overlay?.ignoresMouseEvents != ignoresMouse { overlay?.ignoresMouseEvents = ignoresMouse }
         setActive(state.phase != .closed || state.tear.length > 0 || !spring.isSettled || sample.isPressed)
+    }
+
+    /// Tells the game where the pointer is inside the open panel, in panel points from its top-left.
+    private func updatePanelPointer(_ location: CGPoint, in geometry: NotchGeometry) {
+        let drop = dropRect(in: geometry)
+        let pointer = state.phase == .open && drop.contains(location)
+            ? CGPoint(x: location.x - drop.minX, y: drop.maxY - location.y)
+            : nil
+        if state.panelPointer != pointer { state.panelPointer = pointer }
     }
 
     private func updatePull(_ pull: CGFloat) {

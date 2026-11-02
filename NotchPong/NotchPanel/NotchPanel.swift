@@ -22,6 +22,8 @@ final class NotchPanel: NSPanel {
         level = .statusBar
         collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
         isReleasedWhenClosed = false
+        // Always dark, so system colors like `.secondary` read on the black panel in light mode too.
+        appearance = NSAppearance(named: .darkAqua)
     }
 
     // Lets the game take arrow keys without activating the app.

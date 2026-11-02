@@ -22,6 +22,8 @@ final class PanelState {
     var notchWidth: CGFloat = 0
     /// False on Macs without a notch, where there's no notch to join.
     var hasNotch = false
+    /// The pointer inside the open panel, in panel points from its top-left; nil when it's elsewhere.
+    var panelPointer: CGPoint?
     /// Changes every time the panel opens, so the game knows to start a fresh match.
     private(set) var matchID = UUID()
 

@@ -33,6 +33,10 @@ struct GamePanelView: View {
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAction { onClose() }
         }
+        .background {
+            PongView(state: state)
+                .opacity(solidity)
+        }
         .frame(
             width: DropGeometry.frameWidth(forLength: length, notchWidth: notchWidth, dropOffset: dropOffset),
             height: length
