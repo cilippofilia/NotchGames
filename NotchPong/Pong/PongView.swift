@@ -120,22 +120,7 @@ struct PongView: View {
         }
         glow(paddles, color: Palette.paddle, in: &context)
 
-        // Dimmed while waiting (paused or counting down), so its position still shows.
-        let isWaiting = game.isPaused || game.countdown > 0
-        do {
-            let radius = max(PongModel.ballRadius * scaleY, 4)
-            let ballCenter = CGPoint(
-                x: court.minX + model.ball.position.x * scaleX,
-                y: court.minY + model.ball.position.y * scaleY
-            )
-            let ball = Path(ellipseIn: CGRect(
-                x: ballCenter.x - radius,
-                y: ballCenter.y - radius,
-                width: radius * 2,
-                height: radius * 2
-            ))
-            glow(ball, color: Palette.ball.opacity(isWaiting ? Self.waitingBallOpacity : 1), in: &context)
-        }
+        drawBall(model.ball, dimmed: game.isPaused || game.countdown > 0, in: court, context: &context)
 
         if let hit = game.lastWallHit {
             drawWallSpark(for: hit, age: date.timeIntervalSince(hit.time), in: court, context: &context)
@@ -148,8 +133,23 @@ struct PongView: View {
         drawScores(model, scorer: game.lastPoint?.side, pointAge: pointAge, in: court, context: &context)
     }
 
+    /// Dimmed while waiting (paused or counting down), so its position still shows.
+    private static func drawBall(_ ball: Ball, dimmed: Bool, in court: CGRect, context: inout GraphicsContext) {
+        let scaleX = court.width / PongModel.courtSize.width
+        let scaleY = court.height / PongModel.courtSize.height
+        let radius = max(PongModel.ballRadius * scaleY, 4)
+        let center = CGPoint(x: court.minX + ball.position.x * scaleX, y: court.minY + ball.position.y * scaleY)
+        let shape = Path(ellipseIn: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2))
+        glow(shape, color: Palette.ball.opacity(dimmed ? Self.waitingBallOpacity : 1), in: &context)
+    }
+
     /// A little teal spark where the ball touched the top or bottom wall.
-    private static func drawWallSpark(for hit: WallHit, age: TimeInterval, in court: CGRect, context: inout GraphicsContext) {
+    private static func drawWallSpark(
+        for hit: WallHit,
+        age: TimeInterval,
+        in court: CGRect,
+        context: inout GraphicsContext
+    ) {
         let particles = Explosion.wallSpark(age: age, hitTop: hit.position.y == 0)
         guard let opacity = particles.first?.opacity else { return }
         let scaleX = court.width / PongModel.courtSize.width
