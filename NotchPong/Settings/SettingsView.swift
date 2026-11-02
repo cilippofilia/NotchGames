@@ -13,10 +13,21 @@ struct SettingsView: View {
     @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
     @AppStorage(GutterSize.storageKey) private var gutter = GutterSize.standard
     @AppStorage(PanelSize.storageKey) private var panelSize = PanelSize.standard
+    @AppStorage(PlayerCount.storageKey) private var players = PlayerCount.standard
     @State private var launchesAtLogin = LoginItem.isEnabled
 
     var body: some View {
         Form {
+            Picker(selection: $players) {
+                ForEach(PlayerCount.allCases) { count in
+                    Text(count.title).tag(count)
+                }
+            } label: {
+                Text("players")
+                Text("2 players: left on W/S, right on the pointer or arrows")
+            }
+            .pickerStyle(.segmented)
+
             Picker(selection: $difficulty) {
                 ForEach(Difficulty.allCases) { level in
                     Text(level.title).tag(level)

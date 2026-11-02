@@ -17,13 +17,15 @@ struct PongMessageView: View {
             Spacer()
             Spacer()
             if let winner = game.model.winner {
-                Text(winner == .player ? "you win" : "computer wins")
+                Text(Self.resultText(winner: winner, players: game.playerCount))
                     .font(.system(.title, design: .monospaced))
                     .bold()
                     .foregroundStyle(winner == .player ? Palette.paddle : Palette.ball)
-                Text("streak \(StatsStore.shared.stats.currentStreak)")
-                    .font(.system(.headline, design: .monospaced))
-                    .foregroundStyle(.secondary)
+                if game.playerCount == .one {
+                    Text("streak \(StatsStore.shared.stats.currentStreak)")
+                        .font(.system(.headline, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
                 Button("play again") {
                     game.reset()
                 }
@@ -35,6 +37,15 @@ struct PongMessageView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
+        }
+    }
+
+    private static func resultText(winner: PongSide, players: PlayerCount) -> String {
+        switch (players, winner) {
+        case (.one, .player): String(localized: "you win")
+        case (.one, .computer): String(localized: "computer wins")
+        case (.two, .player): String(localized: "right wins")
+        case (.two, .computer): String(localized: "left wins")
         }
     }
 }

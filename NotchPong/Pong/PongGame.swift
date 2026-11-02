@@ -9,7 +9,8 @@ import CoreGraphics
 import Foundation
 import Observation
 
-/// Runs a match: advances the physics on each frame, moves the computer, and takes the player's paddle input.
+/// Runs a match: advances the physics on each frame, moves the computer (or takes the second player's input),
+/// and takes the player's paddle input. With two players the left paddle, `model.computerY`, is the second player's.
 @MainActor
 @Observable
 final class PongGame {
@@ -34,12 +35,15 @@ final class PongGame {
         didSet { computer = ComputerOpponent(difficulty: difficulty) }
     }
     var opponentSpeed: CGFloat { computer.maxSpeed }
+    /// Takes effect straight away, even mid-match.
+    var playerCount = PlayerCount.standard
     private var computer = ComputerOpponent()
     @ObservationIgnored private var lastTick: Date?
     /// Called once when a match is decided, with the side that won.
     @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
     /// Where the player last aimed while the paddles were frozen; applied when play starts.
     @ObservationIgnored private var pendingAim: CGFloat?
+    @ObservationIgnored private var pendingLeftAim: CGFloat?
 
     /// Paddles only move while the ball is in play: not while paused or counting down.
     var paddlesCanMove: Bool { !isPaused && countdown <= 0 }
@@ -56,6 +60,7 @@ final class PongGame {
         lastPoint = nil
         lastTick = nil
         pendingAim = nil
+        pendingLeftAim = nil
     }
 
     func tick(now: Date) {
@@ -73,13 +78,17 @@ final class PongGame {
         let interval = min(elapsed, PongModel.maxStep)
         guard countdown <= 0 else {
             countdown = max(countdown - elapsed, 0)
-            if countdown <= 0, let pendingAim {
-                setPlayerPaddle(y: pendingAim)
-                self.pendingAim = nil
+            if countdown <= 0 {
+                if let pendingAim { setPlayerPaddle(y: pendingAim) }
+                if let pendingLeftAim { model.computerY = Self.clampedPaddle(pendingLeftAim) }
+                pendingAim = nil
+                pendingLeftAim = nil
             }
             return
         }
-        model.computerY = computer.nextPaddleY(current: model.computerY, ball: model.ball, interval: interval)
+        if playerCount == .one {
+            model.computerY = computer.nextPaddleY(current: model.computerY, ball: model.ball, interval: interval)
+        }
         let playerScoreBefore = model.playerScore
         let computerScoreBefore = model.computerScore
         let ballBefore = model.ball.position
@@ -101,8 +110,26 @@ final class PongGame {
 
     /// `y` in court units (0 top, 1 bottom); clamped so the paddle stays inside the court.
     func setPlayerPaddle(y height: CGFloat) {
+        model.playerY = Self.clampedPaddle(height)
+    }
+
+    /// Second player's input in two-player mode; ignored when playing the computer.
+    func aimLeftPaddle(y height: CGFloat) {
+        guard playerCount == .two else { return }
+        if paddlesCanMove {
+            model.computerY = Self.clampedPaddle(height)
+        } else {
+            pendingLeftAim = height
+        }
+    }
+
+    func nudgeLeftPaddle(by delta: CGFloat) {
+        aimLeftPaddle(y: (pendingLeftAim ?? model.computerY) + delta)
+    }
+
+    private static func clampedPaddle(_ height: CGFloat) -> CGFloat {
         let half = PongModel.paddleHeight / 2
-        model.playerY = min(max(height, half), PongModel.courtSize.height - half)
+        return min(max(height, half), PongModel.courtSize.height - half)
     }
 
     func nudgePlayerPaddle(by delta: CGFloat) {
