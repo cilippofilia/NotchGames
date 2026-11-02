@@ -20,8 +20,8 @@ nonisolated enum PullSizing {
     static let maxBodyHeight: CGFloat = 460
     /// Upward release speed (pt/s) that counts as a flick to close.
     static let flickVelocity: CGFloat = 800
-    /// Pulling the drip this far opens the panel to its small size on its own, skipping the in-between shapes.
-    static let autoOpenPull: CGFloat = 60
+    /// Pulling the drop out of the notch grows the panel this many times faster than the pointer moves.
+    static let openingGain: CGFloat = 1.6
     /// How far past the maximum the panel can be stretched while dragging.
     static let maxStretch: CGFloat = 40
     private static let stretchResistance: CGFloat = 0.2

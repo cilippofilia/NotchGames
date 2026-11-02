@@ -20,10 +20,11 @@ struct PullTrackerTests {
         pressed: Bool,
         at time: TimeInterval,
         startPull: CGFloat = 0,
+        gain: CGFloat = 1,
         grabZone: CGRect?? = .none
     ) -> PointerAction {
         let sample = PointerSample(location: CGPoint(x: 756, y: height), time: time, isPressed: pressed)
-        return tracker.handle(sample, grabZone: grabZone ?? zone, startPull: startPull, anchorY: 950)
+        return tracker.handle(sample, grabZone: grabZone ?? zone, startPull: startPull, gain: gain, anchorY: 950)
     }
 
     @Test func pressInsideZoneStartsPullAtStartValue() {
@@ -67,21 +68,10 @@ struct PullTrackerTests {
         #expect(feed(&tracker, height: 920, pressed: true, at: 0.016, grabZone: .some(nil)) == .none)
     }
 
-    @Test func cancelledPullIgnoresTheRestOfThePress() {
+    @Test func gainMakesThePullGrowFasterThanThePointer() {
         var tracker = PullTracker()
         _ = feed(&tracker, height: 920, pressed: false, at: 0)
-        _ = feed(&tracker, height: 920, pressed: true, at: 0.016)
-        tracker.cancel()
-        #expect(feed(&tracker, height: 800, pressed: true, at: 0.1) == .none)
-        #expect(feed(&tracker, height: 800, pressed: false, at: 0.2) == .none)
-    }
-
-    @Test func newPressAfterCancelGrabsAgain() {
-        var tracker = PullTracker()
-        _ = feed(&tracker, height: 920, pressed: false, at: 0)
-        _ = feed(&tracker, height: 920, pressed: true, at: 0.016)
-        tracker.cancel()
-        _ = feed(&tracker, height: 920, pressed: false, at: 0.1)
-        #expect(feed(&tracker, height: 920, pressed: true, at: 0.2) == .pull(0))
+        _ = feed(&tracker, height: 920, pressed: true, at: 0.016, startPull: 40, gain: 1.5)
+        #expect(feed(&tracker, height: 820, pressed: true, at: 0.5, startPull: 40, gain: 1.5) == .pull(190))
     }
 }

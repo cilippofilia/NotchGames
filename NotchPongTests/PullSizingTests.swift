@@ -54,9 +54,4 @@ struct PullSizingTests {
     @Test func rubberBandNeverNegative() {
         #expect(PullSizing.rubberBandedHeight(forPull: -40) == 0)
     }
-
-    @Test func autoOpenKicksInWellBeforeTheSmallSize() {
-        #expect(PullSizing.autoOpenPull > Magnet.maxLength)
-        #expect(PullSizing.autoOpenPull < PullSizing.minBodyHeight)
-    }
 }

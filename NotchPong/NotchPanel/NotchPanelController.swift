@@ -104,6 +104,8 @@ final class NotchPanelController: NSObject {
             sample,
             grabZone: grabZone(in: anchor),
             startPull: state.phase == .open ? state.bodySize.height : spring.value,
+            // Opening from the notch grows faster than the pointer; resizing by the handle stays under it.
+            gain: state.phase == .open ? 1 : PullSizing.openingGain,
             anchorY: anchor.notchRect.minY
         )
         switch action {
@@ -126,12 +128,6 @@ final class NotchPanelController: NSObject {
 
     private func updatePull(_ pull: CGFloat) {
         if state.phase != .dragging { wasOpenBeforeDrag = state.phase == .open }
-        if !wasOpenBeforeDrag, pull >= PullSizing.autoOpenPull {
-            // Let go of the pointer and spring open on its own, so the in-between shapes never linger.
-            tracker.cancel()
-            settle(.open(PullSizing.bodySize(forPull: PullSizing.minBodyHeight)))
-            return
-        }
         state.phase = .dragging
         state.bodySize = PullSizing.bodySize(forPull: pull)
         // Soft enough to lag and stretch behind the pointer like liquid, damped enough not to wobble.
