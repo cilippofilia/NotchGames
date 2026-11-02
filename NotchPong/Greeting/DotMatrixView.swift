@@ -12,11 +12,16 @@ struct DotMatrixView: View {
     let rows: [String]
     let colors: [Character: Color]
 
+    /// Empty dots kept around the art so the glow isn't clipped at the canvas edge.
+    private static let glowMargin = 3
+
     var body: some View {
         let columns = rows.first?.count ?? 0
+        let paddedColumns = CGFloat(columns + 2 * Self.glowMargin)
+        let paddedRows = CGFloat(rows.count + 2 * Self.glowMargin)
         Canvas { context, size in
             guard columns > 0, !rows.isEmpty else { return }
-            let dot = min(size.width / CGFloat(columns), size.height / CGFloat(rows.count))
+            let dot = min(size.width / paddedColumns, size.height / paddedRows)
             let originX = (size.width - dot * CGFloat(columns)) / 2
             let originY = (size.height - dot * CGFloat(rows.count)) / 2
             // One path per color, so each color gets its own glow in a single pass.
@@ -45,6 +50,6 @@ struct DotMatrixView: View {
                 }
             }
         }
-        .aspectRatio(CGFloat(columns) / CGFloat(max(rows.count, 1)), contentMode: .fit)
+        .aspectRatio(paddedColumns / paddedRows, contentMode: .fit)
     }
 }
