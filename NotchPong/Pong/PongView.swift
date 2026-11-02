@@ -18,6 +18,7 @@ struct PongView: View {
     @FocusState private var isFocused: Bool
 
     private static let keyStep: CGFloat = 0.06
+    private static let waitingBallOpacity = 0.4
 
     var body: some View {
         TimelineView(.animation(paused: game.isPaused)) { timeline in
@@ -105,8 +106,9 @@ struct PongView: View {
         }
         glow(paddles, color: Palette.paddle, in: &context)
 
-        // The ball waits out of sight while the countdown runs.
-        if game.countdown <= 0 {
+        // Dimmed while waiting (paused or counting down), so its position still shows.
+        let isWaiting = game.isPaused || game.countdown > 0
+        do {
             let radius = max(PongModel.ballRadius * scaleY, 4)
             let ballCenter = CGPoint(
                 x: court.minX + model.ball.position.x * scaleX,
@@ -118,7 +120,7 @@ struct PongView: View {
                 width: radius * 2,
                 height: radius * 2
             ))
-            glow(ball, color: Palette.ball, in: &context)
+            glow(ball, color: Palette.ball.opacity(isWaiting ? Self.waitingBallOpacity : 1), in: &context)
         }
 
         let pointAge = game.lastPoint.map { date.timeIntervalSince($0.time) }
