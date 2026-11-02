@@ -14,11 +14,7 @@ struct GamePanelView: View {
 
     var body: some View {
         let length = state.hangingLength
-        let shape = UnevenRoundedRectangle(
-            bottomLeadingRadius: DropGeometry.cornerRadius,
-            bottomTrailingRadius: DropGeometry.cornerRadius,
-            style: .continuous
-        )
+        let shape = RoundedRectangle(cornerRadius: DropGeometry.cornerRadius, style: .continuous)
         // Neon and controls fade in as the drip turns into the panel.
         let solidity = DropGeometry.solidity(forLength: length)
 
@@ -37,7 +33,7 @@ struct GamePanelView: View {
         .frame(width: DropGeometry.width(forLength: length), height: length)
         .background(shape.fill(Palette.background))
         .overlay {
-            // Inner glow on the sides and bottom only; the top edge against the notch stays dark.
+            // Inner glow fading out toward the top, so the edge against the notch stays dark.
             Group {
                 shape.stroke(Palette.paddle.opacity(0.6), lineWidth: 3).blur(radius: 4)
                 shape.stroke(Palette.paddle.opacity(0.33), lineWidth: 1)
