@@ -91,7 +91,7 @@ final class NotchPanelController {
         // Soft enough to lag and stretch behind the pointer like liquid, damped enough not to wobble.
         heightSpring.stiffness = 500
         heightSpring.dampingRatio = 0.75
-        heightSpring.target = PullSizing.rubberBandedHeight(forPull: pull) + LiquidProfile.slack
+        heightSpring.target = PullSizing.rubberBandedHeight(forPull: pull)
         showGamePanel()
     }
 
@@ -128,8 +128,8 @@ final class NotchPanelController {
         let action = tracker.handle(
             sample,
             grabZone: zone,
-            startPull: state.phase == .open ? state.bodySize.height : state.tear.length - LiquidProfile.slack,
-            anchorY: geometry.notchRect.minY - LiquidProfile.slack
+            startPull: state.phase == .open ? state.bodySize.height : state.tear.length,
+            anchorY: geometry.notchRect.minY
         )
         switch action {
         case .none: break
@@ -192,7 +192,6 @@ final class NotchPanelController {
             tearPanel?.orderOut(nil)
             return
         }
-        state.neckWidth = notch.notchRect.width
         let panel = tearPanel ?? makeTearPanel()
         panel.setFrame(
             CGRect(
@@ -229,18 +228,14 @@ final class NotchPanelController {
 
     private func frame(forHangingLength length: CGFloat, in geometry: NotchGeometry) -> CGRect {
         let length = max(length, 0)
-        let profile = LiquidProfile.make(
-            length: length,
-            notchWidth: geometry.notchRect.width,
-            dropOffset: state.dropOffset
-        )
-        let width = max(profile.requiredWidth, geometry.notchRect.width)
-        let height = geometry.menuBarHeight + length
+        let width = DropGeometry.width(forLength: length)
+        let offset = DropGeometry.offset(forLength: length, dropOffset: state.dropOffset)
+        // Hangs from the notch's bottom edge; nothing is drawn in the menu bar.
         return CGRect(
-            x: geometry.notchRect.midX - width / 2,
-            y: geometry.notchRect.maxY - height,
+            x: geometry.notchRect.midX + offset - width / 2,
+            y: geometry.notchRect.minY - length,
             width: width,
-            height: height
+            height: length
         )
     }
 
@@ -248,8 +243,6 @@ final class NotchPanelController {
 
     private func showGamePanel() {
         guard let anchor else { return }
-        state.neckWidth = anchor.notchRect.width
-        state.neckHeight = anchor.menuBarHeight
         let panel = gamePanel ?? makeGamePanel()
         guard !panel.isVisible else { return }
         state.hangingLength = max(heightSpring.value, 0)
@@ -267,7 +260,7 @@ final class NotchPanelController {
             // Loose enough to overshoot and wobble like a drop before settling.
             heightSpring.stiffness = 220
             heightSpring.dampingRatio = 0.5
-            heightSpring.target = size.height + LiquidProfile.slack
+            heightSpring.target = size.height
             panel.makeKey()
         case .close:
             state.phase = .closed

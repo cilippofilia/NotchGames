@@ -49,7 +49,7 @@ struct MagnetTests {
     @Test func dropStaysClearOfNotchCorners() {
         let notchWidth: CGFloat = 190
         let shift = Magnet.maxShift(notchWidth: notchWidth)
-        let footprint = LiquidProfile.dripHalfWidth + LiquidProfile.maxFlare
+        let footprint = DropGeometry.dripWidth / 2
         #expect(shift + footprint <= notchWidth / 2 - Magnet.cornerInset)
     }
 

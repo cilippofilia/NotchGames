@@ -15,8 +15,6 @@ import Observation
 final class PanelState {
     var phase: PanelPhase = .closed
     var bodySize: CGSize = .zero
-    var neckWidth: CGFloat = 0
-    var neckHeight: CGFloat = 0
     var tear = TearPose(length: 0, offsetX: 0)
     /// How far the liquid currently hangs below the notch, and where the drip it grew from was.
     var hangingLength: CGFloat = 0

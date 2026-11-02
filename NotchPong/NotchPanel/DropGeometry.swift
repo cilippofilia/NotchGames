@@ -1,0 +1,33 @@
+//
+//  DropGeometry.swift
+//  NotchPong
+//
+//  Created by Filippo Cilia on 11/2/26.
+//
+
+import CoreGraphics
+
+/// Size and position of the black drop hanging from the notch: a narrow drip that grows into the game panel.
+nonisolated enum DropGeometry {
+    static let dripWidth: CGFloat = 28
+    static let cornerRadius: CGFloat = 16
+    /// Hanging length, past a full drip, over which the drip becomes the panel.
+    private static let morphLength: CGFloat = 200
+
+    /// Grows from the drip's width to the panel's full width at the maximum length.
+    static func width(forLength length: CGFloat) -> CGFloat {
+        let growth = (PullSizing.maxBodyHeight * PullSizing.aspect - dripWidth)
+            / (PullSizing.maxBodyHeight - Magnet.maxLength)
+        return dripWidth + max(length - Magnet.maxLength, 0) * growth
+    }
+
+    /// Starts under the pointer like the drip, then slides back to the notch's center.
+    static func offset(forLength length: CGFloat, dropOffset: CGFloat) -> CGFloat {
+        dropOffset * (1 - solidity(forLength: length))
+    }
+
+    /// 0 for a drip, 1 for the panel. Fades in the neon and the panel's contents.
+    static func solidity(forLength length: CGFloat) -> CGFloat {
+        min(max((length - Magnet.maxLength) / morphLength, 0), 1)
+    }
+}

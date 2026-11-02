@@ -12,14 +12,15 @@ struct TearView: View {
     let state: PanelState
 
     var body: some View {
-        LiquidShape(
-            length: state.tear.length,
-            dropOffset: state.tear.offsetX,
-            notchWidth: state.neckWidth,
-            neckHeight: 0
+        UnevenRoundedRectangle(
+            bottomLeadingRadius: DropGeometry.cornerRadius,
+            bottomTrailingRadius: DropGeometry.cornerRadius
         )
-            .fill(Palette.background)
-            .animation(.interpolatingSpring(stiffness: 300, damping: 18), value: state.tear)
-            .accessibilityHidden(true)
+        .fill(Palette.background)
+        .frame(width: DropGeometry.dripWidth, height: state.tear.length)
+        .offset(x: state.tear.offsetX)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .animation(.interpolatingSpring(stiffness: 300, damping: 18), value: state.tear)
+        .accessibilityHidden(true)
     }
 }

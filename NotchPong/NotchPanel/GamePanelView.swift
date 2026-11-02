@@ -13,25 +13,14 @@ struct GamePanelView: View {
     let onClose: () -> Void
 
     var body: some View {
-        let shape = LiquidShape(
-            length: state.hangingLength,
-            dropOffset: state.dropOffset,
-            notchWidth: state.neckWidth,
-            neckHeight: state.neckHeight
+        let shape = UnevenRoundedRectangle(
+            bottomLeadingRadius: DropGeometry.cornerRadius,
+            bottomTrailingRadius: DropGeometry.cornerRadius
         )
-        var outline = shape
-        outline.isOutline = true
         // Neon and controls fade in as the drip turns into the panel.
-        let solidity = LiquidProfile.make(
-            length: state.hangingLength,
-            notchWidth: state.neckWidth,
-            dropOffset: state.dropOffset
-        ).solidity
+        let solidity = DropGeometry.solidity(forLength: state.hangingLength)
 
-        return VStack(spacing: 0) {
-            Color.clear
-                .frame(height: state.neckHeight + LiquidProfile.slack)
-
+        VStack(spacing: 0) {
             Color.clear
 
             Capsule()
@@ -45,11 +34,12 @@ struct GamePanelView: View {
         }
         .background(shape.fill(Palette.background))
         .overlay {
-            // Inner glow along the edge; the window is exactly the panel's size, so an outer glow would be clipped.
+            // Inner glow on the sides and bottom only; the top edge against the notch stays dark.
             Group {
-                outline.stroke(Palette.paddle.opacity(0.6), lineWidth: 3).blur(radius: 4)
-                outline.stroke(Palette.paddle.opacity(0.33), lineWidth: 1)
+                shape.stroke(Palette.paddle.opacity(0.6), lineWidth: 3).blur(radius: 4)
+                shape.stroke(Palette.paddle.opacity(0.33), lineWidth: 1)
             }
+            .mask(LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.1)))
             .opacity(solidity)
         }
         .clipShape(shape)
