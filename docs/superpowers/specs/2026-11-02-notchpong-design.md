@@ -1,9 +1,9 @@
 # NotchPong — Design
 
-> Renamed NotchGames on 2026-11-03 (project, targets, bundle ID `com.filippocilia.NotchGames`, folder `~/Developer/Projects/macOS/NotchGames`). It now has five games: Pong, air hockey, brick breaker, Snake and the runner. The GitHub repo was renamed to `cilippofilia/NotchGames` the same day.
+> Renamed NotchGames on 2026-11-03 (project, targets, bundle ID `com.filippocilia.NotchGames`, folder `~/Developer/Projects/macOS/NotchGames`). It now has six games: Pong, air hockey, brick breaker, Snake, the runner and the shooting gallery. The GitHub repo was renamed to `cilippofilia/NotchGames` the same day.
 
 Date: 2026-11-02
-Status: Draft for approval
+Status: Built
 
 ## Intent
 

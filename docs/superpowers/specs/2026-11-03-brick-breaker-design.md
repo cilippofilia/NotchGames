@@ -1,7 +1,7 @@
 # Brick Breaker — Design
 
 Date: 2026-11-03
-Status: Draft for approval
+Status: Built
 Part of: v1.2 games (see `docs/superpowers/plans/2026-11-02-notchpong-v1.md`, "v1.2: more games")
 
 ## Intent
