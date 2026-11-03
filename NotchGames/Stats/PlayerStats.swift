@@ -5,32 +5,53 @@
 //  Created by Filippo Cilia on 11/2/26.
 //
 
-/// The player's record against the computer, and the best score in each score-based game.
+/// The player's record against the computer in each match game, and the best score in each score-based game.
 nonisolated struct PlayerStats: Codable, Equatable {
-    var wins = 0
-    var losses = 0
-    /// Wins in a row right now.
-    var currentStreak = 0
-    var bestStreak = 0
+    /// Keyed by `GameKind.rawValue`.
+    var matchRecords: [String: MatchRecord] = [:]
     /// Keyed by `GameKind.rawValue`.
     var bestScores: [String: Int] = [:]
 
-    init(wins: Int = 0, losses: Int = 0, currentStreak: Int = 0, bestStreak: Int = 0, bestScores: [String: Int] = [:]) {
-        self.wins = wins
-        self.losses = losses
-        self.currentStreak = currentStreak
-        self.bestStreak = bestStreak
+    private enum CodingKeys: String, CodingKey {
+        case matchRecords, bestScores
+        // Before records were per game, one shared record sat at the top level; it now belongs to Pong.
+        case wins, losses, currentStreak, bestStreak
+    }
+
+    init(matchRecords: [String: MatchRecord] = [:], bestScores: [String: Int] = [:]) {
+        self.matchRecords = matchRecords
         self.bestScores = bestScores
     }
 
-    /// Records saved before best scores existed have no `bestScores` key; they must still load.
+    /// Loads every saved format. A decoding error would wipe the whole record, so older keys are all optional.
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        wins = try container.decode(Int.self, forKey: .wins)
-        losses = try container.decode(Int.self, forKey: .losses)
-        currentStreak = try container.decode(Int.self, forKey: .currentStreak)
-        bestStreak = try container.decode(Int.self, forKey: .bestStreak)
         bestScores = try container.decodeIfPresent([String: Int].self, forKey: .bestScores) ?? [:]
+        if let records = try container.decodeIfPresent([String: MatchRecord].self, forKey: .matchRecords) {
+            matchRecords = records
+        } else if let wins = try container.decodeIfPresent(Int.self, forKey: .wins) {
+            matchRecords[GameKind.pong.rawValue] = MatchRecord(
+                wins: wins,
+                losses: try container.decodeIfPresent(Int.self, forKey: .losses) ?? 0,
+                currentStreak: try container.decodeIfPresent(Int.self, forKey: .currentStreak) ?? 0,
+                bestStreak: try container.decodeIfPresent(Int.self, forKey: .bestStreak) ?? 0
+            )
+        }
+    }
+
+    /// Writes only the current format, so the old shared record never comes back.
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(matchRecords, forKey: .matchRecords)
+        try container.encode(bestScores, forKey: .bestScores)
+    }
+
+    func matchRecord(for game: GameKind) -> MatchRecord {
+        matchRecords[game.rawValue] ?? MatchRecord()
+    }
+
+    mutating func record(winner: PongSide, for game: GameKind) {
+        matchRecords[game.rawValue, default: MatchRecord()].record(winner: winner)
     }
 
     func bestScore(for game: GameKind) -> Int {
@@ -44,15 +65,9 @@ nonisolated struct PlayerStats: Codable, Equatable {
         return true
     }
 
-    mutating func record(winner: PongSide) {
-        switch winner {
-        case .player:
-            wins += 1
-            currentStreak += 1
-            bestStreak = max(bestStreak, currentStreak)
-        case .computer:
-            losses += 1
-            currentStreak = 0
-        }
+    /// Clears one game's record and best score.
+    mutating func reset(_ game: GameKind) {
+        matchRecords[game.rawValue] = nil
+        bestScores[game.rawValue] = nil
     }
 }

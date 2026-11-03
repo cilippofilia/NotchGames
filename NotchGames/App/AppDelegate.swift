@@ -12,6 +12,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var controller: NotchPanelController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Before the panel's views read their settings.
+        Difficulty.copySharedChoice(in: .standard)
         let controller = NotchPanelController(state: panelState)
         controller.start()
         self.controller = controller

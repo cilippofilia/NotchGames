@@ -16,8 +16,19 @@ nonisolated enum Difficulty: String, CaseIterable, Identifiable {
     case expert
 
     static let standard = Difficulty.moderate
-    /// Where the choice is saved in user defaults.
-    static let storageKey = "difficulty"
+    /// Where each game's choice is saved in user defaults. Pong keeps the original key from when one difficulty
+    /// covered both games.
+    static func storageKey(for game: GameKind) -> String {
+        game == .pong ? "difficulty" : "\(game.rawValue)Difficulty"
+    }
+
+    /// Air Hockey used to share Pong's difficulty. Give it its own copy once, so it starts where the player left it.
+    static func copySharedChoice(in defaults: UserDefaults) {
+        let airHockeyKey = storageKey(for: .airHockey)
+        guard defaults.object(forKey: airHockeyKey) == nil,
+              let shared = defaults.string(forKey: storageKey(for: .pong)) else { return }
+        defaults.set(shared, forKey: airHockeyKey)
+    }
 
     var id: Self { self }
 

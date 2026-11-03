@@ -30,6 +30,20 @@ nonisolated enum GameKind: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Played against the computer, with a difficulty and a win/loss record; the rest chase a best score.
+    var hasOpponent: Bool { self == .pong || self == .airHockey }
+
+    /// The game's Settings tab icon.
+    var symbolName: String {
+        switch self {
+        case .pong: "circle.and.line.horizontal"
+        case .airHockey: "hockey.puck"
+        case .brickBreaker: "square.grid.3x2"
+        case .snake: "scribble.variable"
+        case .runner: "figure.skateboarding"
+        }
+    }
+
     var title: String {
         switch self {
         case .pong: String(localized: "pong")

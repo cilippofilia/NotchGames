@@ -13,7 +13,7 @@ struct AirHockeyView: View {
     let state: PanelState
 
     @State private var game = AirHockeyGame()
-    @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
+    @AppStorage(Difficulty.storageKey(for: .airHockey)) private var difficulty = Difficulty.standard
     @State private var size = CGSize.zero
     @FocusState private var isFocused: Bool
 
@@ -49,6 +49,7 @@ struct AirHockeyView: View {
                     isPaused: game.display.isPaused,
                     isCountingDown: game.display.countdownSeconds > 0,
                     isSettingsOpen: state.isSettingsOpen,
+                    streak: StatsStore.shared.stats.matchRecord(for: .airHockey).currentStreak,
                     onRestart: game.reset
                 )
             }
@@ -77,7 +78,7 @@ struct AirHockeyView: View {
         .onChange(of: isFocused) { game.heldKeys.releaseAll() }
         .onAppear {
             isFocused = true
-            game.onMatchEnd = { StatsStore.shared.record(winner: $0) }
+            game.onMatchEnd = { StatsStore.shared.record(winner: $0, for: .airHockey) }
         }
         .accessibilityElement()
         .accessibilityLabel("air hockey")

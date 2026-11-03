@@ -14,7 +14,7 @@ Classic phone-style Snake for a dead moment: steer a growing snake around a grid
 - **Movement:** one cell per step. A step takes 0.14 s, 3 ms less per food eaten, down to 0.06 s.
 - **Eating:** +10 points and the snake grows by one cell.
 - **Crashing:** running into its own body ends the run. Moving into the cell the tail is leaving is safe.
-- **Walls (Settings › "snake walls", on by default):** on, hitting the edge ends the run. Off, the snake comes out of the opposite side. Toggling mid-run applies straight away. On draws a solid glowing border; off draws a faint dashed one. The border is inset 6 pt from the panel on every side with a 22 pt corner radius (the panel's 28 minus the inset), so it's concentric with the panel.
+- **Walls (Settings › snake tab › "walls", on by default):** on, hitting the edge ends the run. Off, the snake comes out of the opposite side. Toggling mid-run applies straight away. On draws a solid glowing border; off draws a faint dashed one. The border is inset 6 pt from the panel on every side with a 22 pt corner radius (the panel's 28 minus the inset), so it's concentric with the panel.
 - **Full grid:** if there's no free cell for food, the run ends.
 
 ## Input: keys only
@@ -32,7 +32,7 @@ Known gap: clicking into another app while the panel stays open doesn't pause th
 
 ## Shared pieces
 
-Reuses `MatchClock` (countdown, pause, 1/30 s frame cap; steps run off an accumulator), `MatchCountdownView`, `MatchMessageView` (with a `resumeHint`), `CourtDimView`, `ScoreNumber`/`ScoreLabel`, and `StatsStore.recordScore(_:for: .snake)`. Settings' record section shows "snake best". One best score covers both wall modes.
+Reuses `MatchClock` (countdown, pause, 1/30 s frame cap; steps run off an accumulator), `MatchCountdownView`, `MatchMessageView` (with a `resumeHint`), `CourtDimView`, `ScoreNumber`/`ScoreLabel`, and `StatsStore.recordScore(_:for: .snake)`. The snake Settings tab shows the best score and resets it. One best score covers both wall modes.
 
 ## Files
 

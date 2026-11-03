@@ -24,8 +24,8 @@ final class StatsStore {
             .flatMap { try? JSONDecoder().decode(PlayerStats.self, from: $0) } ?? PlayerStats()
     }
 
-    func record(winner: PongSide) {
-        stats.record(winner: winner)
+    func record(winner: PongSide, for game: GameKind) {
+        stats.record(winner: winner, for: game)
         save()
     }
 
@@ -36,8 +36,9 @@ final class StatsStore {
         return isNewBest
     }
 
-    func reset() {
-        stats = PlayerStats()
+    /// Clears one game's record and best score.
+    func reset(_ game: GameKind) {
+        stats.reset(game)
         save()
     }
 

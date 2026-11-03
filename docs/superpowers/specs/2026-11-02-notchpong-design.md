@@ -53,6 +53,7 @@ User decision: these are out of v1 and go in the build plan as a v1.1 section.
 - **No-notch Macs and external displays (user decision):** no drag trigger strip, so it never sits over real menu items. Instead the `MenuBarExtra` gets a "Play Pong" item that drops the panel down from the top center at the medium (max) size. Closing still works by dragging the handle up or flicking it. On Macs with a notch, the menu item is there too.
 - **Release behavior:** if the pull is released before reaching the minimum size, the panel snaps closed. Otherwise it stays at the size reached, clamped between min and max. Dragging the handle back up past the minimum, or a quick upward flick, also closes it.
 - **Pausing:** the panel doesn't take focus from your app, so you can keep working with it open. The game auto-pauses when the pointer leaves the court and resumes when it comes back.
+  - *Update 2026-11-03:* Settings is split into tabs: General, then one per game with its own options and record.
   - *Update 2026-11-03:* every game dims its court while paused, counting down or over. Keyboard-only games (Snake) pause on panel close, Settings or lost focus instead of pointer position, and the open panel takes the keyboard back when Settings closes.
 - **Controls:** the player's paddle is on the right and follows the pointer's vertical position while the pointer is over the court. The arrow keys/W-S work too, for accessibility, while the panel is key.
   - *Update 2026-11-03:* held keys move at a steady speed every frame rather than relying on key repeat.

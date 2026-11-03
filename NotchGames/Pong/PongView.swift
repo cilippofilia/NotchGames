@@ -13,7 +13,7 @@ struct PongView: View {
     let state: PanelState
 
     @State private var game = PongGame()
-    @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
+    @AppStorage(Difficulty.storageKey(for: .pong)) private var difficulty = Difficulty.standard
     @State private var size = CGSize.zero
     @FocusState private var isFocused: Bool
 
@@ -49,6 +49,7 @@ struct PongView: View {
                     isPaused: game.display.isPaused,
                     isCountingDown: game.display.countdownSeconds > 0,
                     isSettingsOpen: state.isSettingsOpen,
+                    streak: StatsStore.shared.stats.matchRecord(for: .pong).currentStreak,
                     onRestart: game.reset
                 )
             }
@@ -70,7 +71,7 @@ struct PongView: View {
         .onChange(of: isFocused) { game.heldKeys.releaseAll() }
         .onAppear {
             isFocused = true
-            game.onMatchEnd = { StatsStore.shared.record(winner: $0) }
+            game.onMatchEnd = { StatsStore.shared.record(winner: $0, for: .pong) }
         }
         .accessibilityElement()
         .accessibilityLabel("pong")

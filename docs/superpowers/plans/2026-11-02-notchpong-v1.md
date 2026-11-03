@@ -388,6 +388,7 @@ Quick games for the notch: some last a few minutes, some only seconds. Each game
 4. **Target tap:** pointer clicks. A 30-second round. Glowing dots pop up and fade, and you click as many as you can.
 
 Decided while building:
-- Records: each score-based game keeps a best score in `PlayerStats.bestScores`, keyed by `GameKind` raw value, shown in Settings' record section and cleared by "reset record".
+- Records: each score-based game keeps a best score in `PlayerStats.bestScores`, keyed by `GameKind` raw value, shown in that game's Settings tab and cleared by its own reset.
 - Pausing: pointer games pause when the pointer leaves the panel. Keyboard-only games (Snake, the runner) pause when the panel closes, Settings opens or keyboard focus goes elsewhere, and resume on a key press through the countdown. When Settings closes, the open panel takes the keyboard back.
 - Order: brick breaker, then Snake, then the runner. Still to build: target tap.
+- Settings (2026-11-03): tabs. General has the game picker, panel size, gutter and launch at login. Each game has its own tab with its options (Pong and Air Hockey each have their own difficulty; Snake has walls) and its own record with a reset. Wins, losses and streaks are kept per game; the old shared record moved to Pong, and Air Hockey's difficulty started as a copy of the shared one.

@@ -7,21 +7,25 @@
 
 import SwiftUI
 
-/// The player's record in Settings, with a way to start over.
+/// One game's record in Settings: wins, losses and streaks against the computer, or the best score.
+/// The reset clears only this game.
 struct StatsSection: View {
     let store: StatsStore
+    let game: GameKind
 
     var body: some View {
         Section("record") {
-            LabeledContent("wins", value: store.stats.wins, format: .number)
-            LabeledContent("losses", value: store.stats.losses, format: .number)
-            LabeledContent("current streak", value: store.stats.currentStreak, format: .number)
-            LabeledContent("best streak", value: store.stats.bestStreak, format: .number)
-            LabeledContent("brick breaker best", value: store.stats.bestScore(for: .brickBreaker), format: .number)
-            LabeledContent("snake best", value: store.stats.bestScore(for: .snake), format: .number)
-            LabeledContent("runner best", value: store.stats.bestScore(for: .runner), format: .number)
-            Button("reset record", role: .destructive) {
-                store.reset()
+            if game.hasOpponent {
+                let record = store.stats.matchRecord(for: game)
+                LabeledContent("wins", value: record.wins, format: .number)
+                LabeledContent("losses", value: record.losses, format: .number)
+                LabeledContent("current streak", value: record.currentStreak, format: .number)
+                LabeledContent("best streak", value: record.bestStreak, format: .number)
+            } else {
+                LabeledContent("best score", value: store.stats.bestScore(for: game), format: .number)
+            }
+            Button("reset \(game.title) record", role: .destructive) {
+                store.reset(game)
             }
         }
         .contentTransition(.numericText())
@@ -31,7 +35,7 @@ struct StatsSection: View {
 
 #Preview {
     Form {
-        StatsSection(store: StatsStore(defaults: UserDefaults(suiteName: "preview") ?? .standard))
+        StatsSection(store: StatsStore(defaults: UserDefaults(suiteName: "preview") ?? .standard), game: .pong)
     }
     .formStyle(.grouped)
 }

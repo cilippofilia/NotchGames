@@ -19,6 +19,8 @@ struct MatchMessageView: View {
     var runResult: RunResult?
     /// What brings a paused game back; Snake listens to keys, not the pointer.
     var resumeHint: LocalizedStringKey = "move here to play"
+    /// Wins in a row in this game, shown under a win.
+    var streak = 0
     let onRestart: () -> Void
 
     var body: some View {
@@ -43,8 +45,8 @@ struct MatchMessageView: View {
                     .font(.system(.title, design: .monospaced))
                     .bold()
                     .foregroundStyle(winner == .player ? Palette.paddle : Palette.ball)
-                if StatsStore.shared.stats.currentStreak > 0 {
-                    Text("streak \(StatsStore.shared.stats.currentStreak)")
+                if streak > 0 {
+                    Text("streak \(streak)")
                         .font(.system(.headline, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
