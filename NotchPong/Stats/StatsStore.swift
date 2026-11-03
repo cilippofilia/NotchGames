@@ -29,6 +29,13 @@ final class StatsStore {
         save()
     }
 
+    /// Returns true when it's a new best.
+    func recordScore(_ score: Int, for game: GameKind) -> Bool {
+        let isNewBest = stats.recordScore(score, for: game)
+        if isNewBest { save() }
+        return isNewBest
+    }
+
     func reset() {
         stats = PlayerStats()
         save()

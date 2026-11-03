@@ -57,4 +57,32 @@ struct StatsTests {
         game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.16))
         #expect(winners == [.computer])
     }
+
+    @Test func oldSavedStatsStillLoad() throws {
+        let defaults = try #require(UserDefaults(suiteName: "StatsTests-\(UUID())"))
+        defaults.set(Data(#"{"wins":4,"losses":2,"currentStreak":1,"bestStreak":3}"#.utf8), forKey: "stats")
+        let stats = StatsStore(defaults: defaults).stats
+        #expect(stats == PlayerStats(wins: 4, losses: 2, currentStreak: 1, bestStreak: 3))
+    }
+
+    @Test func onlyAHigherScoreIsANewBest() {
+        var stats = PlayerStats()
+        let first = stats.recordScore(120, for: .brickBreaker)
+        let tie = stats.recordScore(120, for: .brickBreaker)
+        let lower = stats.recordScore(80, for: .brickBreaker)
+        #expect(first)
+        #expect(!tie)
+        #expect(!lower)
+        #expect(stats.bestScore(for: .brickBreaker) == 120)
+        #expect(stats.bestScore(for: .pong) == 0)
+    }
+
+    @Test func bestScoresSaveAndReset() throws {
+        let defaults = try #require(UserDefaults(suiteName: "StatsTests-\(UUID())"))
+        let store = StatsStore(defaults: defaults)
+        _ = store.recordScore(300, for: .brickBreaker)
+        #expect(StatsStore(defaults: defaults).stats.bestScore(for: .brickBreaker) == 300)
+        store.reset()
+        #expect(StatsStore(defaults: defaults).stats.bestScore(for: .brickBreaker) == 0)
+    }
 }

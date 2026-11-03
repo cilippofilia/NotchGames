@@ -17,6 +17,7 @@ struct StatsSection: View {
             LabeledContent("losses", value: store.stats.losses, format: .number)
             LabeledContent("current streak", value: store.stats.currentStreak, format: .number)
             LabeledContent("best streak", value: store.stats.bestStreak, format: .number)
+            LabeledContent("brick breaker best", value: store.stats.bestScore(for: .brickBreaker), format: .number)
             Button("reset record", role: .destructive) {
                 store.reset()
             }

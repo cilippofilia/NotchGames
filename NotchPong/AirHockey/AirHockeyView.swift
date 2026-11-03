@@ -36,20 +36,20 @@ struct AirHockeyView: View {
             )
         }
         .overlay {
-            MatchCountdownView(
-                countdown: TimeInterval(game.display.countdownSeconds),
-                isRunning: !game.display.isPaused && game.display.winner == nil,
-                panelHeight: size.height
-            )
-        }
-        .overlay {
-            MatchMessageView(
-                winner: game.display.winner,
-                isPaused: game.display.isPaused,
-                isCountingDown: game.display.countdownSeconds > 0,
-                isSettingsOpen: state.isSettingsOpen,
-                onRestart: game.reset
-            )
+            VStack {
+                MatchCountdownView(
+                    countdown: TimeInterval(game.display.countdownSeconds),
+                    isRunning: !game.display.isPaused && game.display.winner == nil,
+                    panelHeight: size.height
+                )
+                MatchMessageView(
+                    winner: game.display.winner,
+                    isPaused: game.display.isPaused,
+                    isCountingDown: game.display.countdownSeconds > 0,
+                    isSettingsOpen: state.isSettingsOpen,
+                    onRestart: game.reset
+                )
+            }
         }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
         .onChange(of: state.panelPointer) { _, pointer in

@@ -12,6 +12,7 @@ import Foundation
 nonisolated enum GameKind: String, CaseIterable, Identifiable {
     case pong
     case airHockey
+    case brickBreaker
 
     static let standard = GameKind.pong
     /// Where the choice is saved in user defaults.
@@ -23,6 +24,7 @@ nonisolated enum GameKind: String, CaseIterable, Identifiable {
         switch self {
         case .pong: String(localized: "pong")
         case .airHockey: String(localized: "air hockey")
+        case .brickBreaker: String(localized: "brick breaker")
         }
     }
 }
