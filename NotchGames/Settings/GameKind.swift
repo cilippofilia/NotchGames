@@ -14,6 +14,7 @@ nonisolated enum GameKind: String, CaseIterable, Identifiable {
     case airHockey
     case brickBreaker
     case snake
+    case runner
 
     static let standard = GameKind.pong
     /// Where the choice is saved in user defaults.
@@ -24,7 +25,7 @@ nonisolated enum GameKind: String, CaseIterable, Identifiable {
     /// The panel's shape and sizes. The court fills the panel, so its aspect is also the court's.
     var panelShape: PanelShape {
         switch self {
-        case .pong, .airHockey, .snake: .wide
+        case .pong, .airHockey, .snake, .runner: .wide
         case .brickBreaker: .tall
         }
     }
@@ -35,6 +36,7 @@ nonisolated enum GameKind: String, CaseIterable, Identifiable {
         case .airHockey: String(localized: "air hockey")
         case .brickBreaker: String(localized: "brick breaker")
         case .snake: String(localized: "snake")
+        case .runner: String(localized: "runner")
         }
     }
 }

@@ -19,6 +19,7 @@ struct StatsSection: View {
             LabeledContent("best streak", value: store.stats.bestStreak, format: .number)
             LabeledContent("brick breaker best", value: store.stats.bestScore(for: .brickBreaker), format: .number)
             LabeledContent("snake best", value: store.stats.bestScore(for: .snake), format: .number)
+            LabeledContent("runner best", value: store.stats.bestScore(for: .runner), format: .number)
             Button("reset record", role: .destructive) {
                 store.reset()
             }

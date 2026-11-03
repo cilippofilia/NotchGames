@@ -36,4 +36,4 @@ Reuses `MatchClock` (countdown, pause, 1/30 s frame cap; steps run off an accumu
 
 ## Files
 
-`NotchGames/Snake/`: `GridCell`, `SnakeModel` (rules, injectable random generator), `SnakeDisplay`, `SnakeGame` (loop, input, best score), `SnakeView`. Tests: `NotchGamesTests/SnakeModelTests.swift`.
+`NotchGames/Snake/`: `GridCell`, `SnakeModel` (rules, injectable random generator), `RunDisplay` (shared, in `Match/`), `SnakeGame` (loop, input, best score), `SnakeView`. Tests: `NotchGamesTests/SnakeModelTests.swift`.

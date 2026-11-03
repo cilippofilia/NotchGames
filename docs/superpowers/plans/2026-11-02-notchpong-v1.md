@@ -378,16 +378,16 @@ These each get their own spec/plan pass when started. They're listed here so v1 
 
 ---
 
-## v1.2: more games (planned 2026-11-02; brick breaker and Snake built 2026-11-03)
+## v1.2: more games (planned 2026-11-02; brick breaker, Snake and the runner built 2026-11-03)
 
 Quick games for the notch: some last a few minutes, some only seconds. Each game has one main input, and the others are extras: keys come first for keyboard games, the pointer for pointer games. Each game is a new `GameKind` case shown by `GameView`, with its own `<Name>Game` (`@MainActor @Observable`) and `<Name>View`, in the same style as Pong and air hockey. They should reuse `MatchClock`, `MatchCountdownView`, `MatchMessageView` and `CourtEffects` where they fit. Each one gets its own spec/plan pass when it's started.
 
 1. **Snake (built 2026-11-03):** arrows or WASD only; the pointer does nothing. Grid-based, speeds up as it grows, optional walls in Settings. See `docs/superpowers/specs/2026-11-03-snake-design.md`.
 2. **Brick breaker (built 2026-11-03):** pointer (main input), arrows as extras. Lasts a few minutes. A paddle along the bottom knocks out a wall of bricks. Reuses `Ball`, the swept-collision bounces and the wall sparks. Cheapest to build.
-3. **Runner:** space or up arrow to jump. Lasts seconds to a minute. Obstacles scroll in from the right, the panel's width gives room to react, and one hit ends the run.
+3. **Runner (built 2026-11-03):** a neon port of Skate Run (cilippofilia.dev/games). Keys only: space/↑/W to jump (hold for higher), ↓/S to duck, escape to pause. Cones, pigeons, benches and carts. See `docs/superpowers/specs/2026-11-03-runner-design.md`.
 4. **Target tap:** pointer clicks. A 30-second round. Glowing dots pop up and fade, and you click as many as you can.
 
 Decided while building:
 - Records: each score-based game keeps a best score in `PlayerStats.bestScores`, keyed by `GameKind` raw value, shown in Settings' record section and cleared by "reset record".
-- Pausing: pointer games pause when the pointer leaves the panel. Keyboard-only games (Snake) pause when the panel closes, Settings opens or keyboard focus goes elsewhere, and resume on a key press through the countdown. When Settings closes, the open panel takes the keyboard back.
-- Order: brick breaker, then Snake. Still to build: the runner, then target tap.
+- Pausing: pointer games pause when the pointer leaves the panel. Keyboard-only games (Snake, the runner) pause when the panel closes, Settings opens or keyboard focus goes elsewhere, and resume on a key press through the countdown. When Settings closes, the open panel takes the keyboard back.
+- Order: brick breaker, then Snake, then the runner. Still to build: target tap.

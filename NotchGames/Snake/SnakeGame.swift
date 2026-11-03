@@ -21,7 +21,7 @@ final class SnakeGame {
     @ObservationIgnored private(set) var model: SnakeModel
     @ObservationIgnored private var clock = MatchClock()
     /// Score, pause and countdown, republished only when one of them changes.
-    private(set) var display = SnakeDisplay()
+    private(set) var display = RunDisplay()
     @ObservationIgnored private let stats: StatsStore
     @ObservationIgnored private var sinceStep: TimeInterval = 0
     @ObservationIgnored private var isNewBest = false
@@ -82,7 +82,7 @@ final class SnakeGame {
     }
 
     private func publishDisplay() {
-        let latest = SnakeDisplay(
+        let latest = RunDisplay(
             isPaused: clock.isPaused,
             countdownSeconds: Int(clock.countdown.rounded(.up)),
             score: model.score,
