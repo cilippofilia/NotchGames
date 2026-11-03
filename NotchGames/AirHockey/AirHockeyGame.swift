@@ -29,6 +29,8 @@ final class AirHockeyGame {
     @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
     /// Where the player's mallet is being steered, in court units.
     @ObservationIgnored private var playerAim: CGPoint
+    /// Arrow and W/A/S/D keys being held; they steer the mallet each frame of play.
+    @ObservationIgnored var heldKeys = HeldKeys()
 
     /// The computer's mallet speed, scaled from the Pong paddle speed because it covers a whole half-court.
     private static let speedScale: CGFloat = 2.4
@@ -73,6 +75,8 @@ final class AirHockeyGame {
     func tick(now: Date) {
         defer { publishDisplay() }
         guard case .playing(let interval) = clock.advance(to: now) else { return }
+        let step = HeldKeys.speed * interval
+        nudgeAim(by: CGVector(dx: heldKeys.vector.dx * step, dy: heldKeys.vector.dy * step))
         let computerTarget = AirHockeyOpponent.target(puck: model.puck, mallet: model.computerMallet)
         let puckBefore = model.puck.position
         let scoresBefore = (model.playerScore, model.computerScore)
@@ -110,7 +114,9 @@ final class AirHockeyGame {
     }
 
     func nudgeAim(by delta: CGVector) {
-        aim(at: CGPoint(x: playerAim.x + delta.dx, y: playerAim.y + delta.dy))
+        let moved = CGPoint(x: playerAim.x + delta.dx, y: playerAim.y + delta.dy)
+        // Clamped, or a held key would push the aim off-court and reversing would lag.
+        aim(at: AirHockeyModel.clamped(moved, for: .player))
     }
 
     /// Same rule as Pong: only the panel itself starts a paused game; the gutter keeps a running one going.

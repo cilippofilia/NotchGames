@@ -26,6 +26,8 @@ final class NotchPanelController: NSObject {
     private var anchor: NotchGeometry?
     private var tracker = PullTracker()
     private var wasOpenBeforeDrag = false
+    /// Settings takes the keyboard while open; this notices it closing so the panel can take it back.
+    private var wasSettingsOpen = false
     /// How far the drop hangs below the notch.
     private var spring = Spring(stiffness: 400, dampingRatio: 0.45)
     private var lastStepTime: CFTimeInterval?
@@ -118,6 +120,7 @@ final class NotchPanelController: NSObject {
             settle(PullSizing.releaseOutcome(pull: pull, upwardVelocity: velocity, shape: state.shape))
         }
         matchPanelToGameShape()
+        reclaimKeyboardAfterSettings()
 
         spring.step(by: elapsed)
         // Observation fires on every write, so only write real changes to avoid redrawing every frame.
@@ -134,6 +137,13 @@ final class NotchPanelController: NSObject {
         )
         if overlay?.ignoresMouseEvents != ignoresMouse { overlay?.ignoresMouseEvents = ignoresMouse }
         setActive(state.phase != .closed || state.tear.length > 0 || !spring.isSettled || sample.isPressed)
+    }
+
+    /// Settings took the keyboard; give it back to an open panel when Settings closes, or keyboard-only games
+    /// like Snake can't be played until the panel is reopened.
+    private func reclaimKeyboardAfterSettings() {
+        if wasSettingsOpen, !state.isSettingsOpen, state.phase == .open { overlay?.makeKey() }
+        wasSettingsOpen = state.isSettingsOpen
     }
 
     /// Tells the game where the pointer is inside the open panel, in panel points from its top-left.

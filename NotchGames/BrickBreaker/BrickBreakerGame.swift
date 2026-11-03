@@ -34,6 +34,8 @@ final class BrickBreakerGame {
     /// Where the player last aimed while the paddle was frozen; applied when play starts.
     @ObservationIgnored private var pendingAim: CGFloat?
     @ObservationIgnored private var isNewBest = false
+    /// Arrow and A/D keys being held; they move the paddle each frame of play.
+    @ObservationIgnored var heldKeys = HeldKeys()
 
     var isPaused: Bool {
         get { clock.isPaused }
@@ -80,6 +82,7 @@ final class BrickBreakerGame {
             interval = step
         }
         guard !model.isOver else { return }
+        nudge(by: heldKeys.vector.dx * HeldKeys.speed * interval)
 
         let ballBefore = model.ball.position
         model.step(by: interval)

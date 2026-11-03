@@ -17,6 +17,8 @@ struct MatchMessageView: View {
     let isSettingsOpen: Bool
     /// Set when a score-based run has ended; shown instead of a winner.
     var runResult: RunResult?
+    /// What brings a paused game back; Snake listens to keys, not the pointer.
+    var resumeHint: LocalizedStringKey = "move here to play"
     let onRestart: () -> Void
 
     var body: some View {
@@ -57,7 +59,7 @@ struct MatchMessageView: View {
                             .font(.system(.headline, design: .monospaced))
                             .foregroundStyle(.secondary)
                     }
-                    Text("move here to play")
+                    Text(resumeHint)
                         .font(.system(.title, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }

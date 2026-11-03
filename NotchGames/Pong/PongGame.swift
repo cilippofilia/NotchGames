@@ -28,6 +28,8 @@ final class PongGame {
     /// The most recent wall bounce, for its spark.
     private(set) var lastWallHit: WallHit?
     /// The ball's recent positions, oldest first, for its trail.
+    /// Arrow and W/S keys being held; they move the paddle each frame of play.
+    @ObservationIgnored var heldKeys = HeldKeys()
     @ObservationIgnored private(set) var ballTrail: [(position: CGPoint, time: Date)] = []
     static let trailLength: TimeInterval = 0.08
     var isPaused: Bool {
@@ -91,6 +93,7 @@ final class PongGame {
         case .playing(let step):
             interval = step
         }
+        nudgePlayerPaddle(by: heldKeys.vector.dy * HeldKeys.speed * interval)
         model.computerY = computer.nextPaddleY(current: model.computerY, ball: model.ball, interval: interval)
         let playerScoreBefore = model.playerScore
         let computerScoreBefore = model.computerScore

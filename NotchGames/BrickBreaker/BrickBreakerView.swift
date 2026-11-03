@@ -16,8 +16,6 @@ struct BrickBreakerView: View {
     @State private var size = CGSize.zero
     @FocusState private var isFocused: Bool
 
-    private static let keyStep: CGFloat = 0.06
-
     var body: some View {
         let display = game.display
         TimelineView(.animation(paused: display.isPaused)) { timeline in
@@ -27,6 +25,9 @@ struct BrickBreakerView: View {
             .onChange(of: timeline.date) { _, date in
                 game.tick(now: date)
             }
+        }
+        .overlay {
+            CourtDimView(isDimmed: display.isPaused || display.countdownSeconds > 0 || display.isOver)
         }
         .overlay(alignment: .top) {
             HStack(alignment: .firstTextBaseline) {
@@ -63,12 +64,11 @@ struct BrickBreakerView: View {
         .focusable()
         .focusEffectDisabled()
         .focused($isFocused)
-        .onKeyPress(keys: [.leftArrow, .rightArrow, "a", "d"]) { press in
-            let isLeft = press.key == .leftArrow || press.characters == "a"
-            game.nudge(by: isLeft ? -Self.keyStep : Self.keyStep)
-            if !game.model.isOver { game.isPaused = false }
+        .onKeyPress(keys: [.leftArrow, .rightArrow, "a", "d"], phases: [.down, .repeat, .up]) { press in
+            if game.heldKeys.record(press), !game.model.isOver { game.isPaused = false }
             return .handled
         }
+        .onChange(of: isFocused) { game.heldKeys.releaseAll() }
         .onAppear {
             isFocused = true
         }

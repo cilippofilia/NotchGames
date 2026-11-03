@@ -13,6 +13,7 @@ struct SettingsView: View {
     @AppStorage(Difficulty.storageKey) private var difficulty = Difficulty.standard
     @AppStorage(GutterSize.storageKey) private var gutter = GutterSize.standard
     @AppStorage(PanelSize.storageKey) private var panelSize = PanelSize.standard
+    @AppStorage(SnakeGame.wallsStorageKey) private var snakeHasWalls = true
     @State private var launchesAtLogin = LoginItem.isEnabled
     @Environment(PanelState.self) private var panelState
 
@@ -34,6 +35,11 @@ struct SettingsView: View {
                 Text("how fast and sharp the computer plays")
             }
             .pickerStyle(.segmented)
+
+            Toggle(isOn: $snakeHasWalls) {
+                Text("snake walls")
+                Text("on, hitting the edge ends the run; off, the snake comes out the other side")
+            }
 
             Picker(selection: $gutter) {
                 ForEach(GutterSize.allCases) { size in

@@ -17,8 +17,6 @@ struct AirHockeyView: View {
     @State private var size = CGSize.zero
     @FocusState private var isFocused: Bool
 
-    private static let keyStep: CGFloat = 0.06
-
     var body: some View {
         TimelineView(.animation(paused: game.display.isPaused)) { timeline in
             Canvas { context, canvasSize in
@@ -27,6 +25,10 @@ struct AirHockeyView: View {
             .onChange(of: timeline.date) { _, date in
                 game.tick(now: date)
             }
+        }
+        .overlay {
+            let display = game.display
+            CourtDimView(isDimmed: display.isPaused || display.countdownSeconds > 0 || display.winner != nil)
         }
         .overlay {
             MatchScoreView(
@@ -65,10 +67,14 @@ struct AirHockeyView: View {
         .focusable()
         .focusEffectDisabled()
         .focused($isFocused)
-        .onKeyPress(keys: [.upArrow, .downArrow, .leftArrow, .rightArrow, "w", "a", "s", "d"]) { press in
-            steer(with: press)
+        .onKeyPress(
+            keys: [.upArrow, .downArrow, .leftArrow, .rightArrow, "w", "a", "s", "d"],
+            phases: [.down, .repeat, .up]
+        ) { press in
+            if game.heldKeys.record(press), game.winner == nil { game.isPaused = false }
             return .handled
         }
+        .onChange(of: isFocused) { game.heldKeys.releaseAll() }
         .onAppear {
             isFocused = true
             game.onMatchEnd = { StatsStore.shared.record(winner: $0) }
@@ -76,18 +82,6 @@ struct AirHockeyView: View {
         .accessibilityElement()
         .accessibilityLabel("air hockey")
         .accessibilityValue("you \(game.display.playerScore), computer \(game.display.computerScore)")
-    }
-
-    private func steer(with press: KeyPress) {
-        let step = Self.keyStep
-        let delta: CGVector = switch (press.key, press.characters) {
-        case (.upArrow, _), (_, "w"): CGVector(dx: 0, dy: -step)
-        case (.downArrow, _), (_, "s"): CGVector(dx: 0, dy: step)
-        case (.leftArrow, _), (_, "a"): CGVector(dx: -step, dy: 0)
-        default: CGVector(dx: step, dy: 0)
-        }
-        game.nudgeAim(by: delta)
-        if game.winner == nil { game.isPaused = false }
     }
 
     private static func draw(_ game: AirHockeyGame, at date: Date, in context: inout GraphicsContext, size: CGSize) {

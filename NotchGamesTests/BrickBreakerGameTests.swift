@@ -122,3 +122,18 @@ struct BrickBreakerGameTests {
         #expect(!changed.withLock { $0 })
     }
 }
+
+extension BrickBreakerGameTests {
+    @Test func heldKeyGlidesThePaddleAtKeySpeed() throws {
+        let game = BrickBreakerGame(model: stillModel(), stats: try freshStats())
+        let now = startPlay(game)
+        let start = game.model.paddleX
+        game.heldKeys.set(.left, isDown: true)
+        run(game, from: now, for: 0.1)
+        #expect(abs((start - game.model.paddleX) - HeldKeys.speed * 0.1) < 0.01)
+        game.heldKeys.set(.left, isDown: false)
+        let stopped = game.model.paddleX
+        run(game, from: now.addingTimeInterval(0.1), for: 0.1)
+        #expect(game.model.paddleX == stopped)
+    }
+}

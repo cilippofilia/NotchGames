@@ -17,8 +17,6 @@ struct PongView: View {
     @State private var size = CGSize.zero
     @FocusState private var isFocused: Bool
 
-    private static let keyStep: CGFloat = 0.06
-
     var body: some View {
         TimelineView(.animation(paused: game.display.isPaused)) { timeline in
             Canvas { context, canvasSize in
@@ -27,6 +25,10 @@ struct PongView: View {
             .onChange(of: timeline.date) { _, date in
                 game.tick(now: date)
             }
+        }
+        .overlay {
+            let display = game.display
+            CourtDimView(isDimmed: display.isPaused || display.countdownSeconds > 0 || display.winner != nil)
         }
         .overlay {
             MatchScoreView(
@@ -61,13 +63,11 @@ struct PongView: View {
         .focusable()
         .focusEffectDisabled()
         .focused($isFocused)
-        .onKeyPress(keys: [.upArrow, .downArrow, "w", "s"]) { press in
-            let isUp = press.key == .upArrow || press.characters == "w"
-            let step = isUp ? -Self.keyStep : Self.keyStep
-            game.nudgePlayerPaddle(by: step)
-            if game.model.winner == nil { game.isPaused = false }
+        .onKeyPress(keys: [.upArrow, .downArrow, "w", "s"], phases: [.down, .repeat, .up]) { press in
+            if game.heldKeys.record(press), game.model.winner == nil { game.isPaused = false }
             return .handled
         }
+        .onChange(of: isFocused) { game.heldKeys.releaseAll() }
         .onAppear {
             isFocused = true
             game.onMatchEnd = { StatsStore.shared.record(winner: $0) }
