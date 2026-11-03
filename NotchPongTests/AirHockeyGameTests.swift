@@ -63,4 +63,17 @@ struct AirHockeyGameTests {
         #expect(game.lastPoint?.side == .computer)
         #expect(game.countdown == MatchClock.countdownLength)
     }
+
+    @Test func puckTrailKeepsOnlyRecentPositions() {
+        let game = AirHockeyGame()
+        game.isPaused = false
+        let start = Date.now.addingTimeInterval(MatchClock.countdownLength + 0.1)
+        game.tick(now: .now)
+        for frame in 0..<30 {
+            game.tick(now: start.addingTimeInterval(Double(frame) / 60))
+        }
+        #expect(!game.puckTrail.isEmpty)
+        let newest = start.addingTimeInterval(29.0 / 60)
+        #expect(game.puckTrail.allSatisfy { newest.timeIntervalSince($0.time) <= PongGame.trailLength })
+    }
 }

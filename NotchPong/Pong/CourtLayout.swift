@@ -11,7 +11,8 @@ import CoreGraphics
 nonisolated enum CourtLayout {
     private static let sideInset: CGFloat = 24
     /// Thin top and bottom walls, so the ball bounces right at the panel's edge; the handle sits over the court.
-    private static let topInset: CGFloat = 6
+    /// Measured from the panel's flat top edge, which sits below the neck curving out of the notch.
+    private static let topInset: CGFloat = DropGeometry.neckRadius + 6
     private static let bottomInset: CGFloat = 6
 
     static func rect(in size: CGSize) -> CGRect {

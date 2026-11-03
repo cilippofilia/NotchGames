@@ -82,7 +82,9 @@ struct PongEffectsTests {
 
     @Test func courtSitsCloseToThePanelEdges() {
         let court = CourtLayout.rect(in: CGSize(width: 640, height: 400))
-        #expect(court.minY <= 6)
+        // The top is measured from the panel's flat edge, below the neck curving out of the notch.
+        #expect(court.minY > DropGeometry.neckRadius)
+        #expect(court.minY - DropGeometry.neckRadius <= 6)
         #expect(400 - court.maxY <= 6)
     }
 }

@@ -7,11 +7,13 @@
 
 import SwiftUI
 
-/// "move here to play" while paused, or the result with a way to play again. All lowercase, the game's style.
+/// "move here to play" while paused, restart and settings while waiting, or the result with a way to play again.
+/// All lowercase, the game's style.
 struct MatchMessageView: View {
     let winner: PongSide?
     let isPaused: Bool
-    let onPlayAgain: () -> Void
+    let isCountingDown: Bool
+    let onRestart: () -> Void
 
     var body: some View {
         // Two-thirds down the court, clear of the serve in the middle.
@@ -26,13 +28,16 @@ struct MatchMessageView: View {
                 Text("streak \(StatsStore.shared.stats.currentStreak)")
                     .font(.system(.headline, design: .monospaced))
                     .foregroundStyle(.secondary)
-                Button("play again", action: onPlayAgain)
+                Button("play again", action: onRestart)
                 .buttonStyle(.borderedProminent)
                 .tint(Palette.paddle.opacity(0.4))
-            } else if isPaused {
-                Text("move here to play")
-                    .font(.system(.headline, design: .monospaced))
-                    .foregroundStyle(.secondary)
+            } else if isPaused || isCountingDown {
+                if isPaused {
+                    Text("move here to play")
+                        .font(.system(.headline, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
+                MatchControlsView(onRestart: onRestart)
             }
             Spacer()
         }

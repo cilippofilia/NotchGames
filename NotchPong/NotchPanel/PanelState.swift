@@ -6,7 +6,6 @@
 //
 
 import CoreGraphics
-import Foundation
 import Observation
 
 /// Shared state between the panel controller (AppKit) and the panel's SwiftUI views.
@@ -24,10 +23,4 @@ final class PanelState {
     var hasNotch = false
     /// The pointer inside the open panel, in panel points from its top-left; nil when it's elsewhere.
     var panelPointer: CGPoint?
-    /// Changes every time the panel opens, so the game knows to start a fresh match.
-    private(set) var matchID = UUID()
-
-    func startNewMatch() {
-        matchID = UUID()
-    }
 }

@@ -64,7 +64,6 @@ final class NotchPanelController: NSObject {
         if notch == nil { place(under: virtualGeometry()) }
         guard anchor != nil else { return }
         wasOpenBeforeDrag = false
-        state.startNewMatch()
         settle(.open(PullSizing.bodySize(forPull: PanelSize.saved.bodyHeight)))
     }
 
@@ -146,8 +145,6 @@ final class NotchPanelController: NSObject {
 
     private func updatePull(_ pull: CGFloat) {
         if state.phase != .dragging { wasOpenBeforeDrag = state.phase == .open }
-        // Reset the game as the pull begins, so the last match never shows while the panel grows.
-        if state.phase == .closed { state.startNewMatch() }
         state.phase = .dragging
         state.bodySize = PullSizing.bodySize(forPull: pull)
         // Soft enough to lag and stretch behind the pointer like liquid, damped enough not to wobble.

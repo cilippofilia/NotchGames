@@ -39,15 +39,13 @@ struct PongView: View {
             MatchMessageView(
                 winner: game.model.winner,
                 isPaused: game.isPaused,
-                onPlayAgain: game.reset
+                isCountingDown: game.countdown > 0,
+                onRestart: game.reset
             )
         }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
         .onChange(of: state.panelPointer) { _, pointer in
             follow(pointer)
-        }
-        .onChange(of: state.matchID) {
-            game.reset()
         }
         .onChange(of: difficulty, initial: true) {
             game.difficulty = difficulty
@@ -107,6 +105,13 @@ struct PongView: View {
         }
         CourtEffects.glow(paddles, color: Palette.paddle, in: &context)
 
+        // The trail freezes while waiting, so hide it rather than leave a stuck streak.
+        if !game.isPaused, game.countdown <= 0 {
+            let centers = game.ballTrail.map {
+                CGPoint(x: court.minX + $0.position.x * scaleX, y: court.minY + $0.position.y * scaleY)
+            }
+            CourtEffects.drawTrail(centers, radius: max(PongModel.ballRadius * scaleY, 4), in: &context)
+        }
         drawBall(model.ball, dimmed: game.isPaused || game.countdown > 0, in: court, context: &context)
 
         CourtEffects.drawEvents(

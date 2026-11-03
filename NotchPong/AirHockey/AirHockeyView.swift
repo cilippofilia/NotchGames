@@ -39,7 +39,8 @@ struct AirHockeyView: View {
             MatchMessageView(
                 winner: game.winner,
                 isPaused: game.isPaused,
-                onPlayAgain: game.reset
+                isCountingDown: game.countdown > 0,
+                onRestart: game.reset
             )
         }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
@@ -49,9 +50,6 @@ struct AirHockeyView: View {
                 to: pointer.map { CourtLayout.courtPoint(forPanelPoint: $0, in: size) },
                 insidePanel: insidePanel
             )
-        }
-        .onChange(of: state.matchID) {
-            game.reset()
         }
         .onChange(of: difficulty, initial: true) {
             game.difficulty = difficulty
@@ -118,6 +116,10 @@ struct AirHockeyView: View {
             height: puckRadius * 2
         ))
         let waiting = game.isPaused || game.countdown > 0
+        // The trail freezes while waiting, so hide it rather than leave a stuck streak.
+        if !waiting {
+            CourtEffects.drawTrail(game.puckTrail.map { place($0.position) }, radius: puckRadius, in: &context)
+        }
         CourtEffects.glow(puck, color: Palette.ball.opacity(waiting ? CourtEffects.waitingOpacity : 1), in: &context)
 
         CourtEffects.drawEvents(

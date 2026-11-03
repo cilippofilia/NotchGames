@@ -18,6 +18,8 @@ final class AirHockeyGame {
     private var clock = MatchClock()
     private(set) var lastPoint: PointEvent?
     private(set) var lastWallHit: WallHit?
+    /// The puck's recent positions, oldest first, for its trail.
+    private(set) var puckTrail: [(position: CGPoint, time: Date)] = []
     var difficulty = Difficulty.standard
     /// Called once when a match is decided, with the side that won.
     @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
@@ -44,6 +46,7 @@ final class AirHockeyGame {
         clock = MatchClock()
         lastPoint = nil
         lastWallHit = nil
+        puckTrail = []
         playerAim = model.playerMallet
     }
 
@@ -58,10 +61,14 @@ final class AirHockeyGame {
             computerTarget: computerTarget,
             computerSpeed: difficulty.opponentSpeed * Self.speedScale
         )
+        puckTrail.append((puckBefore, now))
+        puckTrail.removeAll { now.timeIntervalSince($0.time) > PongGame.trailLength }
         if let bounce = model.wallBounce {
             lastWallHit = WallHit(position: bounce.position, inward: bounce.inward, time: now)
         }
         guard (model.playerScore, model.computerScore) != scoresBefore else { return }
+        // The puck is back at the center, so its old trail would streak across the rink.
+        puckTrail = []
         let side: PongSide = model.playerScore != scoresBefore.0 ? .player : .computer
         lastPoint = PointEvent(
             side: side,

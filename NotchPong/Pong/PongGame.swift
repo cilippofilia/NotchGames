@@ -23,6 +23,9 @@ final class PongGame {
     private(set) var lastPoint: PointEvent?
     /// The most recent wall bounce, for its spark.
     private(set) var lastWallHit: WallHit?
+    /// The ball's recent positions, oldest first, for its trail.
+    private(set) var ballTrail: [(position: CGPoint, time: Date)] = []
+    static let trailLength: TimeInterval = 0.08
     var isPaused: Bool {
         get { clock.isPaused }
         set { clock.isPaused = newValue }
@@ -52,6 +55,7 @@ final class PongGame {
         lastPoint = nil
         lastWallHit = nil
         pendingAim = nil
+        ballTrail = []
     }
 
     func tick(now: Date) {
@@ -71,12 +75,16 @@ final class PongGame {
         let computerScoreBefore = model.computerScore
         let ballBefore = model.ball.position
         model.step(by: interval)
+        ballTrail.append((ballBefore, now))
+        ballTrail.removeAll { now.timeIntervalSince($0.time) > Self.trailLength }
         if let bounce = model.wallBounce {
             // Court y runs down, so the top wall (y = 0) sends its spark down.
             let inward = CGVector(dx: 0, dy: bounce.y == 0 ? 1 : -1)
             lastWallHit = WallHit(position: bounce, inward: inward, time: now)
         }
         guard model.playerScore != playerScoreBefore || model.computerScore != computerScoreBefore else { return }
+        // The ball is back at the center, so its old trail would streak across the court.
+        ballTrail = []
         let side: PongSide = model.playerScore != playerScoreBefore ? .player : .computer
         let exitY = min(max(ballBefore.y, 0), PongModel.courtSize.height)
         lastPoint = PointEvent(

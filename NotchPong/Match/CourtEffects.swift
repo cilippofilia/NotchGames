@@ -125,6 +125,16 @@ enum CourtEffects {
         }
     }
 
+    /// Fading, shrinking copies of the ball along its recent path, oldest first, in view points.
+    static func drawTrail(_ centers: [CGPoint], radius: CGFloat, in context: inout GraphicsContext) {
+        for (index, center) in centers.enumerated() {
+            let age = CGFloat(index + 1) / CGFloat(centers.count + 1)
+            let size = radius * (0.4 + 0.6 * age)
+            let bounds = CGRect(x: center.x - size, y: center.y - size, width: size * 2, height: size * 2)
+            context.fill(Path(ellipseIn: bounds), with: .color(Palette.ball.opacity(0.35 * age)))
+        }
+    }
+
     static func glow(_ path: Path, color: Color, in context: inout GraphicsContext) {
         context.drawLayer { layer in
             layer.addFilter(.shadow(color: color, radius: 8))

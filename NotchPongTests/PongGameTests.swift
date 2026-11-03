@@ -186,4 +186,17 @@ struct PongGameTests {
         #expect(abs(corner.x - PongModel.courtSize.width) < 0.0001)
         #expect(abs(corner.y - PongModel.courtSize.height) < 0.0001)
     }
+
+    @Test func ballTrailKeepsOnlyRecentPositions() {
+        let game = PongGame()
+        game.isPaused = false
+        let start = Date.now.addingTimeInterval(PongGame.countdownLength + 0.1)
+        game.tick(now: .now)
+        for frame in 0..<30 {
+            game.tick(now: start.addingTimeInterval(Double(frame) / 60))
+        }
+        #expect(!game.ballTrail.isEmpty)
+        let newest = start.addingTimeInterval(29.0 / 60)
+        #expect(game.ballTrail.allSatisfy { newest.timeIntervalSince($0.time) <= PongGame.trailLength })
+    }
 }

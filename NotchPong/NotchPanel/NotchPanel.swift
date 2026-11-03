@@ -20,7 +20,8 @@ final class NotchPanel: NSPanel {
         backgroundColor = .clear
         hasShadow = false
         level = .statusBar
-        collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
+        // Transient, not stationary: Mission Control hides it, so the drop can't hang over the Spaces bar.
+        collectionBehavior = [.canJoinAllSpaces, .transient, .fullScreenAuxiliary, .ignoresCycle]
         isReleasedWhenClosed = false
         // Always dark, so system colors like `.secondary` read on the black panel in light mode too.
         appearance = NSAppearance(named: .darkAqua)
