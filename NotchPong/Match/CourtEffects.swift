@@ -24,10 +24,9 @@ enum CourtEffects {
         )
     }
 
-    /// The latest wall spark and point explosion, then the scores (popping when one just changed).
+    /// The latest wall spark and point explosion.
     static func drawEvents(
         _ events: (wallHit: WallHit?, point: PointEvent?),
-        scores: (computer: Int, player: Int),
         at date: Date,
         in court: CGRect,
         context: inout GraphicsContext
@@ -36,11 +35,9 @@ enum CourtEffects {
         if let wallHit {
             drawWallSpark(for: wallHit, age: date.timeIntervalSince(wallHit.time), in: court, context: &context)
         }
-        let pointAge = point.map { date.timeIntervalSince($0.time) }
-        if let point, let pointAge {
-            drawExplosion(for: point, age: pointAge, in: court, context: &context)
+        if let point {
+            drawExplosion(for: point, age: date.timeIntervalSince(point.time), in: court, context: &context)
         }
-        drawScores(scores, scorer: point?.side, pointAge: pointAge, in: court, context: &context)
     }
 
     /// A little teal spark where the ball or puck touched a wall.
@@ -97,34 +94,6 @@ enum CourtEffects {
     }
 
     /// Computer's score on the left, the player's on the right; the one that just changed pops up briefly.
-    static func drawScores(
-        _ scores: (computer: Int, player: Int),
-        scorer: PongSide?,
-        pointAge: TimeInterval?,
-        in court: CGRect,
-        context: inout GraphicsContext
-    ) {
-        let pop = ScorePulse.scale(age: pointAge)
-        let offset = court.width * 0.08
-        let top = court.minY + 12
-        drawScore(scores.computer, at: CGPoint(x: court.midX - offset, y: top),
-                  scale: scorer == .computer ? pop : 1, context: &context)
-        drawScore(scores.player, at: CGPoint(x: court.midX + offset, y: top),
-                  scale: scorer == .player ? pop : 1, context: &context)
-    }
-
-    static func drawScore(_ value: Int, at point: CGPoint, scale: CGFloat, context: inout GraphicsContext) {
-        let text = Text("\(value)")
-            .font(.system(.title3, design: .monospaced))
-            .bold()
-            .foregroundStyle(Palette.paddle.opacity(0.8))
-        context.drawLayer { layer in
-            layer.translateBy(x: point.x, y: point.y)
-            layer.scaleBy(x: scale, y: scale)
-            layer.draw(text, at: .zero)
-        }
-    }
-
     /// Fading, shrinking copies of the ball along its recent path, oldest first, in view points.
     static func drawTrail(_ centers: [CGPoint], radius: CGFloat, in context: inout GraphicsContext) {
         for (index, center) in centers.enumerated() {

@@ -26,3 +26,9 @@ struct GreetingView: View {
         .accessibilityLabel(Self.message)
     }
 }
+
+#Preview {
+    GreetingView()
+        .frame(width: 480, height: 300)
+        .background(Palette.background)
+}

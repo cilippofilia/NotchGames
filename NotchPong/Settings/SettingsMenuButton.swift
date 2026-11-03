@@ -20,3 +20,8 @@ struct SettingsMenuButton: View {
         .keyboardShortcut(",")
     }
 }
+
+#Preview {
+    SettingsMenuButton()
+        .padding()
+}

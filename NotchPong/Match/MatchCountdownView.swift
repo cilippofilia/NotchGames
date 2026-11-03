@@ -27,3 +27,9 @@ struct MatchCountdownView: View {
         }
     }
 }
+
+#Preview {
+    MatchCountdownView(countdown: 2.4, isRunning: true, panelHeight: 300)
+        .frame(width: 480, height: 300)
+        .background(Palette.background)
+}

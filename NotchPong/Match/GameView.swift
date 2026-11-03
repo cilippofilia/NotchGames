@@ -20,3 +20,9 @@ struct GameView: View {
         }
     }
 }
+
+#Preview {
+    GameView(state: PanelState())
+        .frame(width: 480, height: 300)
+        .background(Palette.background)
+}

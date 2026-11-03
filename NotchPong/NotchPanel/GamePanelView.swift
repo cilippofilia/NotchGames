@@ -64,3 +64,17 @@ struct GamePanelView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
+
+#Preview {
+    let state = {
+        let state = PanelState()
+        state.phase = .open
+        state.hangingLength = 300
+        state.notchWidth = 200
+        state.hasNotch = true
+        return state
+    }()
+    GamePanelView(state: state, onClose: {})
+        .frame(width: 560, height: 340)
+        .background(.gray)
+}

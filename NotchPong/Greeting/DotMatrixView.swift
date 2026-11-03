@@ -53,3 +53,10 @@ struct DotMatrixView: View {
         .aspectRatio(paddedColumns / paddedRows, contentMode: .fit)
     }
 }
+
+#Preview {
+    DotMatrixView(rows: PixelArt.embolden(PixelFont.rows(for: "3")), colors: ["#": Palette.ball])
+        .frame(height: 120)
+        .padding()
+        .background(Palette.background)
+}

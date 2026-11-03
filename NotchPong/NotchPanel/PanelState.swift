@@ -23,4 +23,6 @@ final class PanelState {
     var hasNotch = false
     /// The pointer inside the open panel, in panel points from its top-left; nil when it's elsewhere.
     var panelPointer: CGPoint?
+    /// While the Settings window is open the game stays paused, even with the pointer over the panel.
+    var isSettingsOpen = false
 }

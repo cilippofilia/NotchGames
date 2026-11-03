@@ -20,7 +20,7 @@ struct PongView: View {
     private static let keyStep: CGFloat = 0.06
 
     var body: some View {
-        TimelineView(.animation(paused: game.isPaused)) { timeline in
+        TimelineView(.animation(paused: game.display.isPaused)) { timeline in
             Canvas { context, canvasSize in
                 Self.draw(game, at: timeline.date, in: &context, size: canvasSize)
             }
@@ -29,19 +29,27 @@ struct PongView: View {
             }
         }
         .overlay {
-            MatchCountdownView(
-                countdown: game.countdown,
-                isRunning: !game.isPaused && game.model.winner == nil,
-                panelHeight: size.height
+            MatchScoreView(
+                computer: game.display.computerScore,
+                player: game.display.playerScore,
+                court: CourtLayout.rect(in: size)
             )
         }
-        .overlay {
-            MatchMessageView(
-                winner: game.model.winner,
-                isPaused: game.isPaused,
-                isCountingDown: game.countdown > 0,
-                onRestart: game.reset
-            )
+        .overlay(alignment: .center) {
+            VStack {
+                MatchCountdownView(
+                    countdown: TimeInterval(game.display.countdownSeconds),
+                    isRunning: !game.display.isPaused && game.display.winner == nil,
+                    panelHeight: size.height
+                )
+                MatchMessageView(
+                    winner: game.display.winner,
+                    isPaused: game.display.isPaused,
+                    isCountingDown: game.display.countdownSeconds > 0,
+                    isSettingsOpen: state.isSettingsOpen,
+                    onRestart: game.reset
+                )
+            }
         }
         .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
         .onChange(of: state.panelPointer) { _, pointer in
@@ -66,7 +74,7 @@ struct PongView: View {
         }
         .accessibilityElement()
         .accessibilityLabel("pong")
-        .accessibilityValue("you \(game.model.playerScore), computer \(game.model.computerScore)")
+        .accessibilityValue("you \(game.display.playerScore), computer \(game.display.computerScore)")
     }
 
     private func follow(_ pointer: CGPoint?) {
@@ -116,7 +124,6 @@ struct PongView: View {
 
         CourtEffects.drawEvents(
             (game.lastWallHit, game.lastPoint),
-            scores: (computer: model.computerScore, player: model.playerScore),
             at: date,
             in: court,
             context: &context
@@ -133,4 +140,10 @@ struct PongView: View {
         let shape = Path(ellipseIn: bounds)
         CourtEffects.glow(shape, color: Palette.ball.opacity(dimmed ? CourtEffects.waitingOpacity : 1), in: &context)
     }
+}
+
+#Preview {
+    PongView(state: PanelState())
+        .frame(width: 480, height: 300)
+        .background(Palette.background)
 }

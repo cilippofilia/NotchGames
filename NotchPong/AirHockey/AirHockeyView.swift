@@ -20,7 +20,7 @@ struct AirHockeyView: View {
     private static let keyStep: CGFloat = 0.06
 
     var body: some View {
-        TimelineView(.animation(paused: game.isPaused)) { timeline in
+        TimelineView(.animation(paused: game.display.isPaused)) { timeline in
             Canvas { context, canvasSize in
                 Self.draw(game, at: timeline.date, in: &context, size: canvasSize)
             }
@@ -29,17 +29,25 @@ struct AirHockeyView: View {
             }
         }
         .overlay {
+            MatchScoreView(
+                computer: game.display.computerScore,
+                player: game.display.playerScore,
+                court: CourtLayout.rect(in: size)
+            )
+        }
+        .overlay {
             MatchCountdownView(
-                countdown: game.countdown,
-                isRunning: !game.isPaused && game.winner == nil,
+                countdown: TimeInterval(game.display.countdownSeconds),
+                isRunning: !game.display.isPaused && game.display.winner == nil,
                 panelHeight: size.height
             )
         }
         .overlay {
             MatchMessageView(
-                winner: game.winner,
-                isPaused: game.isPaused,
-                isCountingDown: game.countdown > 0,
+                winner: game.display.winner,
+                isPaused: game.display.isPaused,
+                isCountingDown: game.display.countdownSeconds > 0,
+                isSettingsOpen: state.isSettingsOpen,
                 onRestart: game.reset
             )
         }
@@ -67,7 +75,7 @@ struct AirHockeyView: View {
         }
         .accessibilityElement()
         .accessibilityLabel("air hockey")
-        .accessibilityValue("you \(game.model.playerScore), computer \(game.model.computerScore)")
+        .accessibilityValue("you \(game.display.playerScore), computer \(game.display.computerScore)")
     }
 
     private func steer(with press: KeyPress) {
@@ -124,7 +132,6 @@ struct AirHockeyView: View {
 
         CourtEffects.drawEvents(
             (game.lastWallHit, game.lastPoint),
-            scores: (computer: model.computerScore, player: model.playerScore),
             at: date,
             in: court,
             context: &context
@@ -159,4 +166,10 @@ struct AirHockeyView: View {
             layer.stroke(goals, with: .color(Palette.paddle), lineWidth: 4)
         }
     }
+}
+
+#Preview {
+    AirHockeyView(state: PanelState())
+        .frame(width: 480, height: 300)
+        .background(Palette.background)
 }

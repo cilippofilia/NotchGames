@@ -14,12 +14,16 @@ import Observation
 @MainActor
 @Observable
 final class AirHockeyGame {
-    private(set) var model: AirHockeyModel
-    private var clock = MatchClock()
+    // The model, clock and trail change every frame. They're ignored so views don't rebuild per frame:
+    // the rink redraws from its own timeline, and everything else reads `display`.
+    @ObservationIgnored private(set) var model: AirHockeyModel
+    @ObservationIgnored private var clock = MatchClock()
+    /// Paused, countdown, scores and winner, republished only when one of them changes.
+    private(set) var display = MatchDisplay()
     private(set) var lastPoint: PointEvent?
     private(set) var lastWallHit: WallHit?
     /// The puck's recent positions, oldest first, for its trail.
-    private(set) var puckTrail: [(position: CGPoint, time: Date)] = []
+    @ObservationIgnored private(set) var puckTrail: [(position: CGPoint, time: Date)] = []
     var difficulty = Difficulty.standard
     /// Called once when a match is decided, with the side that won.
     @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
@@ -31,7 +35,10 @@ final class AirHockeyGame {
 
     var isPaused: Bool {
         get { clock.isPaused }
-        set { clock.isPaused = newValue }
+        set {
+            clock.isPaused = newValue
+            publishDisplay()
+        }
     }
     var countdown: TimeInterval { clock.countdown }
     var winner: PongSide? { model.winner }
@@ -39,6 +46,7 @@ final class AirHockeyGame {
     init(model: AirHockeyModel = AirHockeyModel()) {
         self.model = model
         playerAim = model.playerMallet
+        publishDisplay()
     }
 
     func reset() {
@@ -48,9 +56,22 @@ final class AirHockeyGame {
         lastWallHit = nil
         puckTrail = []
         playerAim = model.playerMallet
+        publishDisplay()
+    }
+
+    private func publishDisplay() {
+        let latest = MatchDisplay(
+            isPaused: clock.isPaused,
+            countdownSeconds: Int(clock.countdown.rounded(.up)),
+            computerScore: model.computerScore,
+            playerScore: model.playerScore,
+            winner: model.winner
+        )
+        if latest != display { display = latest }
     }
 
     func tick(now: Date) {
+        defer { publishDisplay() }
         guard case .playing(let interval) = clock.advance(to: now) else { return }
         let computerTarget = AirHockeyOpponent.target(puck: model.puck, mallet: model.computerMallet)
         let puckBefore = model.puck.position

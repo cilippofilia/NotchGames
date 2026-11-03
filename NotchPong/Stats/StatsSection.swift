@@ -21,5 +21,14 @@ struct StatsSection: View {
                 store.reset()
             }
         }
+        .contentTransition(.numericText())
+        .animation(.snappy, value: store.stats)
     }
+}
+
+#Preview {
+    Form {
+        StatsSection(store: StatsStore(defaults: UserDefaults(suiteName: "preview") ?? .standard))
+    }
+    .formStyle(.grouped)
 }

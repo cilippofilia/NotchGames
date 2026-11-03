@@ -13,33 +13,52 @@ struct MatchMessageView: View {
     let winner: PongSide?
     let isPaused: Bool
     let isCountingDown: Bool
+    /// The game can't resume until Settings closes, so the hint says so.
+    let isSettingsOpen: Bool
     let onRestart: () -> Void
 
     var body: some View {
-        // Two-thirds down the court, clear of the serve in the middle.
         VStack {
-            Spacer()
-            Spacer()
             if let winner {
                 Text(winner == .player ? "you win" : "computer wins")
                     .font(.system(.title, design: .monospaced))
                     .bold()
                     .foregroundStyle(winner == .player ? Palette.paddle : Palette.ball)
-                Text("streak \(StatsStore.shared.stats.currentStreak)")
-                    .font(.system(.headline, design: .monospaced))
-                    .foregroundStyle(.secondary)
+                if StatsStore.shared.stats.currentStreak > 0 {
+                    Text("streak \(StatsStore.shared.stats.currentStreak)")
+                        .font(.system(.headline, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
                 Button("play again", action: onRestart)
-                .buttonStyle(.borderedProminent)
-                .tint(Palette.paddle.opacity(0.4))
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.capsule)
+                    .padding()
             } else if isPaused || isCountingDown {
                 if isPaused {
+                    if isSettingsOpen {
+                        Text("close settings and")
+                            .font(.system(.headline, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                    }
                     Text("move here to play")
-                        .font(.system(.headline, design: .monospaced))
+                        .font(.system(.title, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
                 MatchControlsView(onRestart: onRestart)
             }
-            Spacer()
         }
+        .frame(maxWidth: .infinity, alignment: .center)
     }
+}
+
+#Preview("Paused") {
+    MatchMessageView(winner: nil, isPaused: true, isCountingDown: false, isSettingsOpen: true, onRestart: {})
+        .frame(width: 480, height: 300)
+        .background(Palette.background)
+}
+
+#Preview("Won") {
+    MatchMessageView(winner: .player, isPaused: false, isCountingDown: false, isSettingsOpen: false, onRestart: {})
+        .frame(width: 480, height: 300)
+        .background(Palette.background)
 }

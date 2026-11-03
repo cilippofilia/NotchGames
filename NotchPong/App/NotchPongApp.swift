@@ -22,6 +22,7 @@ struct NotchPongApp: App {
 
         Settings {
             SettingsView()
+                .environment(appDelegate.panelState)
         }
         // The window takes its size limits from the content, so it grows and shrinks with it.
         .windowResizability(.contentSize)

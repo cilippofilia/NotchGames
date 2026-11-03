@@ -14,13 +14,13 @@ struct MatchControlsView: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
-        HStack {
+        VStack {
             Button(
                 "restart",
                 systemImage: "arrow.counterclockwise",
                 action: onRestart
             )
-            .buttonStyle(.glassProminent)
+            .buttonStyle(.glass)
 
             Button(
                 "settings",
@@ -32,8 +32,12 @@ struct MatchControlsView: View {
             }
             .buttonStyle(.glass)
         }
-        .labelStyle(.iconOnly)
-        .buttonBorderShape(.circle)
-        .tint(Palette.paddle.opacity(0.4))
+        .buttonBorderShape(.capsule)
     }
+}
+
+#Preview {
+    MatchControlsView(onRestart: {})
+        .padding()
+        .background(Palette.background)
 }

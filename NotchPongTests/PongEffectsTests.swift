@@ -43,13 +43,6 @@ struct PongEffectsTests {
         #expect(Explosion.particles(age: Explosion.duration, side: .player).isEmpty)
     }
 
-    @Test func scorePopsThenSettles() {
-        #expect(ScorePulse.scale(age: 0) == ScorePulse.peakScale)
-        #expect(ScorePulse.scale(age: ScorePulse.duration / 2) < ScorePulse.peakScale)
-        #expect(ScorePulse.scale(age: ScorePulse.duration) == 1)
-        #expect(ScorePulse.scale(age: nil) == 1)
-    }
-
     @Test func wallBounceIsRecordedWhereItHit() {
         var model = PongModel()
         model.ball = Ball(position: CGPoint(x: 0.8, y: 0.013), velocity: CGVector(dx: 0.5, dy: -1))

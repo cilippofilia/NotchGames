@@ -199,4 +199,17 @@ struct PongGameTests {
         let newest = start.addingTimeInterval(29.0 / 60)
         #expect(game.ballTrail.allSatisfy { newest.timeIntervalSince($0.time) <= PongGame.trailLength })
     }
+
+    @Test func displayFollowsPauseAndCountdown() {
+        let game = PongGame()
+        #expect(game.display.isPaused)
+        game.isPaused = false
+        #expect(game.display == MatchDisplay(isPaused: false, countdownSeconds: 3))
+        let now = Date.now
+        game.tick(now: now)
+        game.tick(now: now.addingTimeInterval(1.5))
+        #expect(game.display.countdownSeconds == 2)
+        game.tick(now: now.addingTimeInterval(PongGame.countdownLength + 0.1))
+        #expect(game.display.countdownSeconds == 0)
+    }
 }

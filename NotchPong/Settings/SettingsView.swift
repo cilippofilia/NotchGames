@@ -14,6 +14,7 @@ struct SettingsView: View {
     @AppStorage(GutterSize.storageKey) private var gutter = GutterSize.standard
     @AppStorage(PanelSize.storageKey) private var panelSize = PanelSize.standard
     @State private var launchesAtLogin = LoginItem.isEnabled
+    @Environment(PanelState.self) private var panelState
 
     var body: some View {
         Form {
@@ -70,9 +71,12 @@ struct SettingsView: View {
         // Width can be dragged within these bounds; height always fits the content.
         .frame(minWidth: 420, idealWidth: 480, maxWidth: 720)
         .fixedSize(horizontal: false, vertical: true)
+        .onAppear { panelState.isSettingsOpen = true }
+        .onDisappear { panelState.isSettingsOpen = false }
     }
 }
 
 #Preview {
     SettingsView()
+        .environment(PanelState())
 }

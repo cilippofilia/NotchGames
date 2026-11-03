@@ -15,8 +15,12 @@ import Observation
 final class PongGame {
     static let countdownLength = MatchClock.countdownLength
 
-    private(set) var model: PongModel
-    private var clock = MatchClock()
+    // The model, clock, opponent and trail change every frame. They're ignored so views don't rebuild per frame:
+    // the court redraws from its own timeline, and everything else reads `display`.
+    @ObservationIgnored private(set) var model: PongModel
+    @ObservationIgnored private var clock = MatchClock()
+    /// Paused, countdown, scores and winner, republished only when one of them changes.
+    private(set) var display = MatchDisplay()
     /// Seconds left before the ball moves; runs at the start, after every pause and after every point.
     var countdown: TimeInterval { clock.countdown }
     /// The most recent point, for its explosion and score pop.
@@ -24,18 +28,21 @@ final class PongGame {
     /// The most recent wall bounce, for its spark.
     private(set) var lastWallHit: WallHit?
     /// The ball's recent positions, oldest first, for its trail.
-    private(set) var ballTrail: [(position: CGPoint, time: Date)] = []
+    @ObservationIgnored private(set) var ballTrail: [(position: CGPoint, time: Date)] = []
     static let trailLength: TimeInterval = 0.08
     var isPaused: Bool {
         get { clock.isPaused }
-        set { clock.isPaused = newValue }
+        set {
+            clock.isPaused = newValue
+            publishDisplay()
+        }
     }
     /// Takes effect straight away, even mid-match.
     var difficulty = Difficulty.standard {
         didSet { computer = ComputerOpponent(difficulty: difficulty) }
     }
     var opponentSpeed: CGFloat { computer.maxSpeed }
-    private var computer = ComputerOpponent()
+    @ObservationIgnored private var computer = ComputerOpponent()
     /// Called once when a match is decided, with the side that won.
     @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
     /// Where the player last aimed while the paddles were frozen; applied when play starts.
@@ -46,6 +53,7 @@ final class PongGame {
 
     init(model: PongModel = PongModel()) {
         self.model = model
+        publishDisplay()
     }
 
     func reset() {
@@ -56,9 +64,22 @@ final class PongGame {
         lastWallHit = nil
         pendingAim = nil
         ballTrail = []
+        publishDisplay()
+    }
+
+    private func publishDisplay() {
+        let latest = MatchDisplay(
+            isPaused: clock.isPaused,
+            countdownSeconds: Int(clock.countdown.rounded(.up)),
+            computerScore: model.computerScore,
+            playerScore: model.playerScore,
+            winner: model.winner
+        )
+        if latest != display { display = latest }
     }
 
     func tick(now: Date) {
+        defer { publishDisplay() }
         let interval: TimeInterval
         switch clock.advance(to: now) {
         case .waiting, .countingDown:
