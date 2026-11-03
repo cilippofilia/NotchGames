@@ -80,15 +80,18 @@ struct BrickBreakerView: View {
     private func follow(_ pointer: CGPoint?) {
         let insidePanel = pointer.map { CGRect(origin: .zero, size: size).contains($0) } ?? false
         let courtWidth = BrickBreakerModel.courtSize.width
+        let inset = CourtLayout.edgeInset
         game.pointerMoved(
-            toCourtX: pointer.map { CourtLayout.courtPoint(forPanelPoint: $0, in: size, courtWidth: courtWidth).x },
+            toCourtX: pointer.map {
+                CourtLayout.courtPoint(forPanelPoint: $0, in: size, courtWidth: courtWidth, sideInset: inset).x
+            },
             insidePanel: insidePanel
         )
     }
 
     private static func draw(_ game: BrickBreakerGame, at date: Date, in context: inout GraphicsContext, size: CGSize) {
         let model = game.model
-        let court = CourtLayout.rect(in: size)
+        let court = CourtLayout.rect(in: size, sideInset: CourtLayout.edgeInset)
         guard court.width > 0, court.height > 0 else { return }
         let courtWidth = BrickBreakerModel.courtSize.width
         let scaleX = court.width / courtWidth

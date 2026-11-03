@@ -37,7 +37,8 @@ final class NotchPanelController: NSObject {
     /// The drop has to be at least this long before it can be grabbed.
     private static let minGrabLength: CGFloat = 10
     /// Tall enough for the panel at full stretch plus spring overshoot, and the gutter below it.
-    private static let overlayHeight: CGFloat = (PullSizing.maxBodyHeight + PullSizing.maxStretch) * 1.2
+    private static let overlayHeight: CGFloat = (tallestBody + PullSizing.maxStretch) * 1.2
+    private static let tallestBody = GameKind.allCases.map(\.panelShape.maxHeight).max() ?? PullSizing.maxBodyHeight
         + GutterSize.largest.points
 
     init(state: PanelState) {
@@ -64,7 +65,8 @@ final class NotchPanelController: NSObject {
         if notch == nil { place(under: virtualGeometry()) }
         guard anchor != nil else { return }
         wasOpenBeforeDrag = false
-        settle(.open(PullSizing.bodySize(forPull: PanelSize.saved.bodyHeight, aspect: state.aspect)))
+        let height = state.shape.openHeight(for: PanelSize.saved.bodyHeight)
+        settle(.open(PullSizing.bodySize(forPull: height, shape: state.shape)))
     }
 
     func close() {
@@ -113,7 +115,7 @@ final class NotchPanelController: NSObject {
         case .none: break
         case .pull(let pull): updatePull(pull)
         case .release(let pull, let velocity):
-            settle(PullSizing.releaseOutcome(pull: pull, upwardVelocity: velocity, aspect: state.aspect))
+            settle(PullSizing.releaseOutcome(pull: pull, upwardVelocity: velocity, shape: state.shape))
         }
         matchPanelToGameShape()
 
@@ -147,11 +149,11 @@ final class NotchPanelController: NSObject {
     private func updatePull(_ pull: CGFloat) {
         if state.phase != .dragging { wasOpenBeforeDrag = state.phase == .open }
         state.phase = .dragging
-        state.bodySize = PullSizing.bodySize(forPull: pull, aspect: state.aspect)
+        state.bodySize = PullSizing.bodySize(forPull: pull, shape: state.shape)
         // Soft enough to lag and stretch behind the pointer like liquid, damped enough not to wobble.
         spring.stiffness = 500
         spring.dampingRatio = 0.75
-        spring.target = PullSizing.rubberBandedHeight(forPull: pull)
+        spring.target = PullSizing.rubberBandedHeight(forPull: pull, maxHeight: state.shape.maxHeight)
     }
 
     private func settle(_ outcome: ReleaseOutcome) {
@@ -192,10 +194,12 @@ final class NotchPanelController: NSObject {
     /// Switching games while open reshapes the panel to the new game's court, keeping its height.
     /// Only the size changes: settling again would make the panel key and pull focus from Settings.
     private func matchPanelToGameShape() {
-        let wantedWidth = state.bodySize.height * state.aspect
-        guard state.phase == .open, abs(state.bodySize.width - wantedWidth) > 0.5 else { return }
-        state.bodySize = PullSizing.bodySize(forPull: state.bodySize.height, aspect: state.aspect)
-        spring.target = state.bodySize.height
+        guard state.phase == .open else { return }
+        let height = state.shape.openHeight(for: state.bodySize.height)
+        let wanted = PullSizing.bodySize(forPull: height, shape: state.shape)
+        guard wanted != state.bodySize else { return }
+        state.bodySize = wanted
+        spring.target = wanted.height
     }
 
     /// The drop as currently drawn, in screen coordinates.
@@ -205,7 +209,7 @@ final class NotchPanelController: NSObject {
             forLength: length,
             notchWidth: geometry.notchRect.width,
             dropOffset: state.dropOffset,
-            aspect: state.aspect
+            shape: state.shape
         )
         let offset = DropGeometry.offset(forLength: length, dropOffset: state.dropOffset)
         return CGRect(
@@ -266,8 +270,10 @@ final class NotchPanelController: NSObject {
         state.hasNotch = notch != nil
         let panel = overlay ?? makeOverlay()
         // Sized for the widest game shape, so the window never needs resizing when the game changes.
-        let width = DropGeometry.width(forLength: PullSizing.maxBodyHeight + PullSizing.maxStretch, aspect: 1.6) * 1.2
-            + 2 * GutterSize.largest.points
+        let widestDrop = GameKind.allCases.map {
+            DropGeometry.width(forLength: $0.panelShape.maxHeight + PullSizing.maxStretch, shape: $0.panelShape)
+        }.max() ?? 0
+        let width = widestDrop * 1.2 + 2 * GutterSize.largest.points
         panel.setFrame(
             CGRect(
                 x: geometry.notchRect.midX - width / 2,

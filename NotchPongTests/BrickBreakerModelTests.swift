@@ -152,4 +152,12 @@ struct BrickBreakerModelTests {
         for _ in 0..<30 { model.step(by: 1.0 / 60) }
         #expect(model.lives == Model.startingLives)
     }
+
+    @Test func courtReachesThePanelSidesAndKeepsItsShape() {
+        let panel = PullSizing.bodySize(forPull: 900, shape: GameKind.brickBreaker.panelShape)
+        let court = CourtLayout.rect(in: panel, sideInset: CourtLayout.edgeInset)
+        #expect(court.minX == CourtLayout.edgeInset)
+        // Drawn at (nearly) the model's own shape, so the ball isn't squashed against the bricks.
+        #expect(abs(court.width / court.height - Model.courtSize.width) < 0.02)
+    }
 }

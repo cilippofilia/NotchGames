@@ -10,12 +10,15 @@ import CoreGraphics
 /// Where the court sits inside the panel: in from the sides for the rounded corners, close to the top and bottom.
 nonisolated enum CourtLayout {
     private static let sideInset: CGFloat = 24
+    /// For games whose ball should bounce right at the panel's sides, like the top and bottom.
+    static let edgeInset: CGFloat = 6
     /// Thin top and bottom walls, so the ball bounces right at the panel's edge; the handle sits over the court.
     /// Measured from the panel's flat top edge, which sits below the neck curving out of the notch.
     private static let topInset: CGFloat = DropGeometry.neckRadius + 6
     private static let bottomInset: CGFloat = 6
 
-    static func rect(in size: CGSize) -> CGRect {
+    /// `sideInset` defaults to room for the rounded corners; `edgeInset` puts the walls at the panel's sides.
+    static func rect(in size: CGSize, sideInset: CGFloat = sideInset) -> CGRect {
         CGRect(
             x: sideInset,
             y: topInset,
@@ -36,9 +39,10 @@ nonisolated enum CourtLayout {
     static func courtPoint(
         forPanelPoint point: CGPoint,
         in size: CGSize,
-        courtWidth: CGFloat = PongModel.courtSize.width
+        courtWidth: CGFloat = PongModel.courtSize.width,
+        sideInset: CGFloat = sideInset
     ) -> CGPoint {
-        let court = rect(in: size)
+        let court = rect(in: size, sideInset: sideInset)
         guard court.width > 0, court.height > 0 else { return CGPoint(x: courtWidth / 2, y: 0.5) }
         return CGPoint(
             x: (point.x - court.minX) / court.width * courtWidth,

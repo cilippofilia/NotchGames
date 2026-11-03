@@ -16,8 +16,8 @@ nonisolated struct DropShape: Shape {
     var length: CGFloat
     var notchWidth: CGFloat
     var dropOffset: CGFloat
-    /// The game's panel width : height. Not animated: it only changes when the game does.
-    var aspect: CGFloat
+    /// The game's panel shape. Not animated: it only changes when the game does.
+    var shape: PanelShape
 
     var animatableData: AnimatablePair<CGFloat, CGFloat> {
         get { AnimatablePair(length, dropOffset) }
@@ -33,7 +33,7 @@ nonisolated struct DropShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         guard length > 0.5 else { return path }
-        let bodyHalf = DropGeometry.width(forLength: length, aspect: aspect) / 2
+        let bodyHalf = DropGeometry.width(forLength: length, shape: shape) / 2
         let attachHalf = DropGeometry.attachWidth(forLength: length, notchWidth: notchWidth, dropOffset: dropOffset) / 2
         let attachCenter = rect.midX
         let top = rect.minY

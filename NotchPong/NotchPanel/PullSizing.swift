@@ -26,20 +26,20 @@ nonisolated enum PullSizing {
     private static let stretchResistance: CGFloat = 0.2
 
     /// Below the minimum the body is allowed to be smaller, so the panel visibly grows while dragging.
-    /// `aspect` is the game's width : height (`GameKind.panelAspect`).
-    static func bodySize(forPull pull: CGFloat, aspect: CGFloat) -> CGSize {
-        let height = min(max(pull, 0), maxBodyHeight)
-        return CGSize(width: height * aspect, height: height)
+    /// `shape` is the game's (`GameKind.panelShape`).
+    static func bodySize(forPull pull: CGFloat, shape: PanelShape) -> CGSize {
+        let height = min(max(pull, 0), shape.maxHeight)
+        return CGSize(width: height * shape.aspect, height: height)
     }
 
     /// Height to show while dragging: follows the pull, then gives a little past the maximum like a rubber band.
-    static func rubberBandedHeight(forPull pull: CGFloat) -> CGFloat {
-        guard pull > maxBodyHeight else { return max(pull, 0) }
-        return maxBodyHeight + min((pull - maxBodyHeight) * stretchResistance, maxStretch)
+    static func rubberBandedHeight(forPull pull: CGFloat, maxHeight: CGFloat) -> CGFloat {
+        guard pull > maxHeight else { return max(pull, 0) }
+        return maxHeight + min((pull - maxHeight) * stretchResistance, maxStretch)
     }
 
-    static func releaseOutcome(pull: CGFloat, upwardVelocity: CGFloat, aspect: CGFloat) -> ReleaseOutcome {
+    static func releaseOutcome(pull: CGFloat, upwardVelocity: CGFloat, shape: PanelShape) -> ReleaseOutcome {
         if pull < minBodyHeight || upwardVelocity > flickVelocity { return .close }
-        return .open(bodySize(forPull: pull, aspect: aspect))
+        return .open(bodySize(forPull: shape.openHeight(for: pull), shape: shape))
     }
 }

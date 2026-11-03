@@ -16,7 +16,7 @@ struct GamePanelView: View {
         let length = state.hangingLength
         let notchWidth = state.notchWidth
         let dropOffset = state.dropOffset
-        let shape = DropShape(length: length, notchWidth: notchWidth, dropOffset: dropOffset, aspect: state.aspect)
+        let shape = DropShape(length: length, notchWidth: notchWidth, dropOffset: dropOffset, shape: state.shape)
         let attachWidth = DropGeometry.attachWidth(forLength: length, notchWidth: notchWidth, dropOffset: dropOffset)
         // Neon and controls fade in as the drip turns into the panel.
         let solidity = DropGeometry.solidity(forLength: length)
@@ -39,7 +39,7 @@ struct GamePanelView: View {
         }
         .frame(
             width: DropGeometry.frameWidth(
-                forLength: length, notchWidth: notchWidth, dropOffset: dropOffset, aspect: state.aspect
+                forLength: length, notchWidth: notchWidth, dropOffset: dropOffset, shape: state.shape
             ),
             height: length
         )

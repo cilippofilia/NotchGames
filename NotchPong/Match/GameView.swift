@@ -23,7 +23,7 @@ struct GameView: View {
         }
         // The panel takes the game's shape; the controller resizes an open panel to match.
         .onChange(of: game, initial: true) {
-            state.aspect = game.panelAspect
+            state.shape = game.panelShape
         }
     }
 }
