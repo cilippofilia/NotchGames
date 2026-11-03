@@ -54,8 +54,11 @@ The first of the v1.2 games, and the one that sets up the shared pieces the othe
 ## Claude's calls (for the user to check)
 
 - **Panel shape.** Brick breaker gets a portrait panel, about 0.8 : 1 (width : height), so at the large size it's roughly 370 × 460pt instead of 736 × 460pt. That gives the wall about 1.6× more room to fall than a Pong-shaped panel would. Today the shape is one constant, `PullSizing.aspect = 1.6`, used by `PullSizing.bodySize` and `DropGeometry.width`. It becomes a per-game value read from the selected `GameKind`, with Pong and Air Hockey staying at 1.6. Switching games in Settings while the panel is open resizes the panel to the new shape. Panel size (small / medium / large) still sets the height.
+  - *Update 2026-11-03:* it always opens at full size, 480 × 600pt (0.8 : 1), whatever the panel size setting, with the walls at the panel's edges.
 - **Controls.** The pointer's left–right position steers the paddle, the way its height steers Pong's. Left/right arrows and A/D nudge it, as extras. This follows the v1.2 plan ("pointer main input, arrows as extras").
+  - *Update 2026-11-03:* held keys glide the paddle every frame at a steady speed (`HeldKeys.speed`, 1.8 court units/s) instead of stepping on key repeat. Shared with Pong and Air Hockey.
 - **Pausing.** Same as Pong: the game pauses when the pointer leaves the panel or Settings opens, resumes with a countdown when the pointer comes back, and keeps its state while the panel is closed.
+  - *Update 2026-11-03:* the court dims (`CourtDimView`) while paused, counting down or over, so the countdown and messages read clearly over a full wall. Score, lives and best stay bright.
 - **Speed level.** The level goes up every 5 rows dropped. Rows arrive on a timer, so both time and rows push it up. Each level shortens the row interval and raises the ball speed by fixed steps, each with a cap so the game stays playable.
 - **Opening state.** 3 rows on screen at the start, then a new row every ~10 seconds at level 1. Final numbers are tuned by playing.
 - **Wall layout.** A fixed number of columns across the court (about 10), each brick one hit. New rows are full rows. Each row slides down smoothly over a fraction of a second rather than jumping.
