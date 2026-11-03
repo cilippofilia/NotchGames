@@ -15,7 +15,6 @@ nonisolated enum ReleaseOutcome: Equatable {
 
 /// Maps how far the panel has been pulled to the size of the game area below the menu bar.
 nonisolated enum PullSizing {
-    static let aspect: CGFloat = 1.6
     static let minBodyHeight: CGFloat = 250
     static let maxBodyHeight: CGFloat = 460
     /// Upward release speed (pt/s) that counts as a flick to close.
@@ -27,7 +26,8 @@ nonisolated enum PullSizing {
     private static let stretchResistance: CGFloat = 0.2
 
     /// Below the minimum the body is allowed to be smaller, so the panel visibly grows while dragging.
-    static func bodySize(forPull pull: CGFloat) -> CGSize {
+    /// `aspect` is the game's width : height (`GameKind.panelAspect`).
+    static func bodySize(forPull pull: CGFloat, aspect: CGFloat) -> CGSize {
         let height = min(max(pull, 0), maxBodyHeight)
         return CGSize(width: height * aspect, height: height)
     }
@@ -38,8 +38,8 @@ nonisolated enum PullSizing {
         return maxBodyHeight + min((pull - maxBodyHeight) * stretchResistance, maxStretch)
     }
 
-    static func releaseOutcome(pull: CGFloat, upwardVelocity: CGFloat) -> ReleaseOutcome {
+    static func releaseOutcome(pull: CGFloat, upwardVelocity: CGFloat, aspect: CGFloat) -> ReleaseOutcome {
         if pull < minBodyHeight || upwardVelocity > flickVelocity { return .close }
-        return .open(bodySize(forPull: pull))
+        return .open(bodySize(forPull: pull, aspect: aspect))
     }
 }

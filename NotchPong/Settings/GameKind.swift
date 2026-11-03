@@ -20,6 +20,14 @@ nonisolated enum GameKind: String, CaseIterable, Identifiable {
 
     var id: Self { self }
 
+    /// Panel width : height. The court fills the panel, so this is also the court's shape.
+    var panelAspect: CGFloat {
+        switch self {
+        case .pong, .airHockey: 1.6
+        case .brickBreaker: 0.8
+        }
+    }
+
     var title: String {
         switch self {
         case .pong: String(localized: "pong")

@@ -19,6 +19,8 @@ final class PanelState {
     var hangingLength: CGFloat = 0
     var dropOffset: CGFloat = 0
     var notchWidth: CGFloat = 0
+    /// The current game's panel width : height, set by `GameView`.
+    var aspect: CGFloat = GameKind.standard.panelAspect
     /// False on Macs without a notch, where there's no notch to join.
     var hasNotch = false
     /// The pointer inside the open panel, in panel points from its top-left; nil when it's elsewhere.

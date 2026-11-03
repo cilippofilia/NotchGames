@@ -24,8 +24,8 @@ nonisolated enum DropGeometry {
     private static let morphLength: CGFloat = 200
 
     /// Grows from the drip's width to the panel's full width at the maximum length.
-    static func width(forLength length: CGFloat) -> CGFloat {
-        let growth = (PullSizing.maxBodyHeight * PullSizing.aspect - dripWidth)
+    static func width(forLength length: CGFloat, aspect: CGFloat) -> CGFloat {
+        let growth = (PullSizing.maxBodyHeight * aspect - dripWidth)
             / (PullSizing.maxBodyHeight - Magnet.maxLength)
         return dripWidth + max(length - Magnet.maxLength, 0) * growth
     }
@@ -40,8 +40,16 @@ nonisolated enum DropGeometry {
     }
 
     /// Width needed to draw the drop: its body, or its top edge while that is wider.
-    static func frameWidth(forLength length: CGFloat, notchWidth: CGFloat, dropOffset: CGFloat) -> CGFloat {
-        max(width(forLength: length), attachWidth(forLength: length, notchWidth: notchWidth, dropOffset: dropOffset))
+    static func frameWidth(
+        forLength length: CGFloat,
+        notchWidth: CGFloat,
+        dropOffset: CGFloat,
+        aspect: CGFloat
+    ) -> CGFloat {
+        max(
+            width(forLength: length, aspect: aspect),
+            attachWidth(forLength: length, notchWidth: notchWidth, dropOffset: dropOffset)
+        )
     }
 
     /// Starts under the pointer like the drip, then slides back to the notch's center.

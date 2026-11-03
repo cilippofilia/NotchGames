@@ -64,7 +64,7 @@ final class NotchPanelController: NSObject {
         if notch == nil { place(under: virtualGeometry()) }
         guard anchor != nil else { return }
         wasOpenBeforeDrag = false
-        settle(.open(PullSizing.bodySize(forPull: PanelSize.saved.bodyHeight)))
+        settle(.open(PullSizing.bodySize(forPull: PanelSize.saved.bodyHeight, aspect: state.aspect)))
     }
 
     func close() {
@@ -113,8 +113,9 @@ final class NotchPanelController: NSObject {
         case .none: break
         case .pull(let pull): updatePull(pull)
         case .release(let pull, let velocity):
-            settle(PullSizing.releaseOutcome(pull: pull, upwardVelocity: velocity))
+            settle(PullSizing.releaseOutcome(pull: pull, upwardVelocity: velocity, aspect: state.aspect))
         }
+        matchPanelToGameShape()
 
         spring.step(by: elapsed)
         // Observation fires on every write, so only write real changes to avoid redrawing every frame.
@@ -146,7 +147,7 @@ final class NotchPanelController: NSObject {
     private func updatePull(_ pull: CGFloat) {
         if state.phase != .dragging { wasOpenBeforeDrag = state.phase == .open }
         state.phase = .dragging
-        state.bodySize = PullSizing.bodySize(forPull: pull)
+        state.bodySize = PullSizing.bodySize(forPull: pull, aspect: state.aspect)
         // Soft enough to lag and stretch behind the pointer like liquid, damped enough not to wobble.
         spring.stiffness = 500
         spring.dampingRatio = 0.75
@@ -188,13 +189,21 @@ final class NotchPanelController: NSObject {
 
     // MARK: - Geometry
 
+    /// Switching games while open reshapes the panel to the new game's court, keeping its height.
+    private func matchPanelToGameShape() {
+        let wantedWidth = state.bodySize.height * state.aspect
+        guard state.phase == .open, abs(state.bodySize.width - wantedWidth) > 0.5 else { return }
+        settle(.open(PullSizing.bodySize(forPull: state.bodySize.height, aspect: state.aspect)))
+    }
+
     /// The drop as currently drawn, in screen coordinates.
     private func dropRect(in geometry: NotchGeometry) -> CGRect {
         let length = state.hangingLength
         let width = DropGeometry.frameWidth(
             forLength: length,
             notchWidth: geometry.notchRect.width,
-            dropOffset: state.dropOffset
+            dropOffset: state.dropOffset,
+            aspect: state.aspect
         )
         let offset = DropGeometry.offset(forLength: length, dropOffset: state.dropOffset)
         return CGRect(
@@ -254,7 +263,8 @@ final class NotchPanelController: NSObject {
         state.notchWidth = geometry.notchRect.width
         state.hasNotch = notch != nil
         let panel = overlay ?? makeOverlay()
-        let width = DropGeometry.width(forLength: PullSizing.maxBodyHeight + PullSizing.maxStretch) * 1.2
+        // Sized for the widest game shape, so the window never needs resizing when the game changes.
+        let width = DropGeometry.width(forLength: PullSizing.maxBodyHeight + PullSizing.maxStretch, aspect: 1.6) * 1.2
             + 2 * GutterSize.largest.points
         panel.setFrame(
             CGRect(

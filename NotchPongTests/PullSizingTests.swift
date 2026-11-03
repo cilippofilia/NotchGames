@@ -11,31 +11,33 @@ import Testing
 
 struct PullSizingTests {
     @Test func pullMapsToCourtAspect() {
-        #expect(PullSizing.bodySize(forPull: 300) == CGSize(width: 480, height: 300))
+        #expect(PullSizing.bodySize(forPull: 300, aspect: 1.6) == CGSize(width: 480, height: 300))
     }
 
     @Test func pullClampsAtMax() {
-        #expect(PullSizing.bodySize(forPull: 900) == CGSize(width: 736, height: 460))
+        #expect(PullSizing.bodySize(forPull: 900, aspect: 1.6) == CGSize(width: 736, height: 460))
     }
 
     @Test func negativePullIsZero() {
-        #expect(PullSizing.bodySize(forPull: -50) == .zero)
+        #expect(PullSizing.bodySize(forPull: -50, aspect: 1.6) == .zero)
     }
 
     @Test func releaseBelowMinCloses() {
-        #expect(PullSizing.releaseOutcome(pull: 249, upwardVelocity: 0) == .close)
+        #expect(PullSizing.releaseOutcome(pull: 249, upwardVelocity: 0, aspect: 1.6) == .close)
     }
 
     @Test func releaseAtMinOpensAtMin() {
-        #expect(PullSizing.releaseOutcome(pull: 250, upwardVelocity: 0) == .open(CGSize(width: 400, height: 250)))
+        let outcome = PullSizing.releaseOutcome(pull: 250, upwardVelocity: 0, aspect: 1.6)
+        #expect(outcome == .open(CGSize(width: 400, height: 250)))
     }
 
     @Test func releasePastMaxOpensAtMax() {
-        #expect(PullSizing.releaseOutcome(pull: 700, upwardVelocity: 0) == .open(CGSize(width: 736, height: 460)))
+        let outcome = PullSizing.releaseOutcome(pull: 700, upwardVelocity: 0, aspect: 1.6)
+        #expect(outcome == .open(CGSize(width: 736, height: 460)))
     }
 
     @Test func upwardFlickClosesEvenWhenLarge() {
-        #expect(PullSizing.releaseOutcome(pull: 380, upwardVelocity: 1200) == .close)
+        #expect(PullSizing.releaseOutcome(pull: 380, upwardVelocity: 1200, aspect: 1.6) == .close)
     }
 
     @Test func rubberBandFollowsPullUpToMax() {
@@ -53,5 +55,9 @@ struct PullSizingTests {
 
     @Test func rubberBandNeverNegative() {
         #expect(PullSizing.rubberBandedHeight(forPull: -40) == 0)
+    }
+
+    @Test func portraitPanelKeepsItsHeight() {
+        #expect(PullSizing.bodySize(forPull: 900, aspect: 0.8) == CGSize(width: 368, height: 460))
     }
 }

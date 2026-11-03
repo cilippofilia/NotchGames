@@ -11,21 +11,22 @@ import Testing
 
 struct DropGeometryTests {
     @Test func dripIsNarrowAndKeepsItsOffset() {
-        #expect(DropGeometry.width(forLength: Magnet.maxLength) == DropGeometry.dripWidth)
+        #expect(DropGeometry.width(forLength: Magnet.maxLength, aspect: 1.6) == DropGeometry.dripWidth)
         #expect(DropGeometry.offset(forLength: Magnet.maxLength, dropOffset: 30) == 30)
         #expect(DropGeometry.solidity(forLength: Magnet.maxLength) == 0)
     }
 
     @Test func fullLengthIsTheCenteredPanel() {
         let length = PullSizing.maxBodyHeight
-        #expect(DropGeometry.width(forLength: length) == length * PullSizing.aspect)
+        #expect(DropGeometry.width(forLength: length, aspect: 1.6) == length * 1.6)
         #expect(DropGeometry.offset(forLength: length, dropOffset: 30) == 0)
         #expect(DropGeometry.solidity(forLength: length) == 1)
     }
 
     @Test func growsWithoutJumps() {
-        #expect(abs(DropGeometry.width(forLength: 140) - DropGeometry.width(forLength: 140.5)) < 2)
-        #expect(DropGeometry.width(forLength: 0) == DropGeometry.dripWidth)
+        let step = DropGeometry.width(forLength: 140.5, aspect: 1.6) - DropGeometry.width(forLength: 140, aspect: 1.6)
+        #expect(abs(step) < 2)
+        #expect(DropGeometry.width(forLength: 0, aspect: 1.6) == DropGeometry.dripWidth)
     }
 
     @Test func restingDripHasANarrowTop() {
@@ -47,8 +48,13 @@ struct DropGeometryTests {
     }
 
     @Test func frameHoldsBothTopAndBody() {
-        let frame = DropGeometry.frameWidth(forLength: 60, notchWidth: 190, dropOffset: 30)
-        #expect(frame >= DropGeometry.width(forLength: 60))
+        let frame = DropGeometry.frameWidth(forLength: 60, notchWidth: 190, dropOffset: 30, aspect: 1.6)
+        #expect(frame >= DropGeometry.width(forLength: 60, aspect: 1.6))
         #expect(frame >= DropGeometry.attachWidth(forLength: 60, notchWidth: 190, dropOffset: 30))
+    }
+
+    @Test func portraitDropReachesItsWidthAtFullLength() {
+        #expect(DropGeometry.width(forLength: PullSizing.maxBodyHeight, aspect: 0.8) == PullSizing.maxBodyHeight * 0.8)
+        #expect(DropGeometry.width(forLength: Magnet.maxLength, aspect: 0.8) == DropGeometry.dripWidth)
     }
 }
