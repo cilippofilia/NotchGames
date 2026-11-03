@@ -12,8 +12,8 @@ nonisolated struct BrickWall: Equatable {
     static let columns = 10
     static let rowHeight: CGFloat = 0.045
     static let gap: CGFloat = 0.006
-    /// Court y of the top row's top edge.
-    static let top: CGFloat = 0.04
+    /// Court y of the top row's top edge, leaving a strip above the wall for the score.
+    static let top: CGFloat = 0.09
 
     /// `true` is a standing brick.
     private(set) var rows: [[Bool]]

@@ -41,15 +41,17 @@ enum CourtEffects {
     }
 
     /// A little teal spark where the ball or puck touched a wall.
+    /// `courtWidth` is the game's court width in court units; Pong's by default.
     static func drawWallSpark(
         for hit: WallHit,
         age: TimeInterval,
         in court: CGRect,
+        courtWidth: CGFloat = PongModel.courtSize.width,
         context: inout GraphicsContext
     ) {
         let particles = Explosion.spark(age: age, inward: hit.inward)
         guard let opacity = particles.first?.opacity else { return }
-        let scaleX = court.width / PongModel.courtSize.width
+        let scaleX = court.width / courtWidth
         let scaleY = court.height / PongModel.courtSize.height
         let piece = max(court.height * 0.014, 3)
         var sparks = Path()

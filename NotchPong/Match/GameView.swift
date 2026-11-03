@@ -18,7 +18,7 @@ struct GameView: View {
             switch game {
             case .pong: PongView(state: state)
             case .airHockey: AirHockeyView(state: state)
-            case .brickBreaker: Text("brick breaker")
+            case .brickBreaker: BrickBreakerView(state: state)
             }
         }
         // The panel takes the game's shape; the controller resizes an open panel to match.
