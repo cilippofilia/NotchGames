@@ -123,7 +123,7 @@ struct BrickBreakerModelTests {
         for _ in 0..<100 where !model.isOver { model.dropRow() }
         #expect(model.isOver)
         let bottom = try #require(model.wall.lowestBrickBottom)
-        #expect(bottom >= Model.paddleTop)
+        #expect(bottom > Model.paddleTop - 2 * Model.ballRadius)
     }
 
     @Test func rowDroppingOnTheBallPushesItBelow() throws {
@@ -136,5 +136,20 @@ struct BrickBreakerModelTests {
         let bottom = try #require(model.wall.lowestBrickBottom)
         #expect(model.ball.position.y - Model.ballRadius >= bottom)
         #expect(model.ball.velocity == velocity)
+    }
+
+    @Test func rowDropNeverCostsALife() throws {
+        var model = Model()
+        // 15 rows, so the next drop lands the wall just above the paddle.
+        for _ in 0..<12 { model.dropRow() }
+        let lowest = model.wall.rect(row: model.wall.rows.count - 1, column: 4, courtWidth: Model.courtSize.width)
+        model.paddleX = lowest.midX
+        model.ball = Ball(
+            position: CGPoint(x: lowest.midX, y: lowest.maxY + Model.ballRadius + 0.003),
+            velocity: CGVector(dx: 0, dy: 0.7)
+        )
+        model.dropRow()
+        for _ in 0..<30 { model.step(by: 1.0 / 60) }
+        #expect(model.lives == Model.startingLives)
     }
 }

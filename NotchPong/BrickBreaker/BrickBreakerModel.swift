@@ -93,7 +93,7 @@ nonisolated struct BrickBreakerModel {
         }
     }
 
-    /// A new full row arrives at the top, pushing the wall down. Ends the run if the wall reaches the paddle.
+    /// A new full row arrives at the top, pushing the wall down. Ends the run once the wall reaches the paddle.
     mutating func dropRow() {
         guard !isOver else { return }
         let levelBefore = level
@@ -102,7 +102,9 @@ nonisolated struct BrickBreakerModel {
         score += Self.rowPoints
         if level != levelBefore { matchBallToSpeed() }
         pushBallOutOfWall()
-        if let bottom = wall.lowestBrickBottom, bottom >= Self.paddleTop {
+        // The wall has reached the paddle once there's no room left for the ball between them,
+        // so a row can never push the ball through the paddle and cost a life.
+        if let bottom = wall.lowestBrickBottom, bottom > Self.paddleTop - 2 * Self.ballRadius {
             end()
         }
     }

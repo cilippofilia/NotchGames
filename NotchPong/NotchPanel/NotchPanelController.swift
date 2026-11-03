@@ -190,10 +190,12 @@ final class NotchPanelController: NSObject {
     // MARK: - Geometry
 
     /// Switching games while open reshapes the panel to the new game's court, keeping its height.
+    /// Only the size changes: settling again would make the panel key and pull focus from Settings.
     private func matchPanelToGameShape() {
         let wantedWidth = state.bodySize.height * state.aspect
         guard state.phase == .open, abs(state.bodySize.width - wantedWidth) > 0.5 else { return }
-        settle(.open(PullSizing.bodySize(forPull: state.bodySize.height, aspect: state.aspect)))
+        state.bodySize = PullSizing.bodySize(forPull: state.bodySize.height, aspect: state.aspect)
+        spring.target = state.bodySize.height
     }
 
     /// The drop as currently drawn, in screen coordinates.
