@@ -54,7 +54,7 @@ struct DropGeometryTests {
     }
 
     @Test func portraitDropReachesItsWidthAtFullLength() {
-        #expect(DropGeometry.width(forLength: 520, shape: .tall) == 416)
+        #expect(DropGeometry.width(forLength: 600, shape: .tall) == 480)
         #expect(DropGeometry.width(forLength: Magnet.maxLength, shape: .tall) == DropGeometry.dripWidth)
     }
 }

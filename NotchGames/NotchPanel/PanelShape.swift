@@ -21,7 +21,7 @@ nonisolated struct PanelShape: Equatable {
         minOpenHeight: PullSizing.minBodyHeight
     )
     /// Brick breaker: upright and always full size, so the wall has room to fall.
-    static let tall = PanelShape(aspect: 0.8, maxHeight: 520, minOpenHeight: 520)
+    static let tall = PanelShape(aspect: 0.8, maxHeight: 600, minOpenHeight: 600)
 
     func openHeight(for requested: CGFloat) -> CGFloat {
         min(max(requested, minOpenHeight), maxHeight)

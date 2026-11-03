@@ -59,14 +59,14 @@ struct PullSizingTests {
     }
 
     @Test func tallPanelReachesItsOwnHeight() {
-        #expect(PullSizing.bodySize(forPull: 900, shape: .tall) == CGSize(width: 416, height: 520))
+        #expect(PullSizing.bodySize(forPull: 900, shape: .tall) == CGSize(width: 480, height: 600))
     }
 
     @Test func tallPanelHasNoSmallSizes() {
         let short = PullSizing.releaseOutcome(pull: 260, upwardVelocity: 0, shape: .tall)
         let long = PullSizing.releaseOutcome(pull: 900, upwardVelocity: 0, shape: .tall)
-        #expect(short == .open(CGSize(width: 416, height: 520)))
-        #expect(long == .open(CGSize(width: 416, height: 520)))
+        #expect(short == .open(CGSize(width: 480, height: 600)))
+        #expect(long == .open(CGSize(width: 480, height: 600)))
         #expect(PullSizing.releaseOutcome(pull: 249, upwardVelocity: 0, shape: .tall) == .close)
     }
 }
