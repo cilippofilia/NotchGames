@@ -7,26 +7,31 @@
 
 import SwiftUI
 
-/// Shows whichever game is picked in Settings.
+/// Shows whichever game is picked in Settings, after the title screen on a fresh install.
 struct GameView: View {
     let state: PanelState
 
     @AppStorage(GameKind.storageKey) private var game = GameKind.standard
+    @AppStorage(TitleView.seenKey) private var hasSeenTitle = false
 
     var body: some View {
         Group {
-            switch game {
-            case .pong: PongView(state: state)
-            case .airHockey: AirHockeyView(state: state)
-            case .brickBreaker: BrickBreakerView(state: state)
-            case .snake: SnakeView(state: state)
-            case .runner: RunnerView(state: state)
-            case .shootingGallery: GalleryView(state: state)
+            if !hasSeenTitle {
+                TitleView()
+            } else {
+                switch game {
+                case .pong: PongView(state: state)
+                case .airHockey: AirHockeyView(state: state)
+                case .brickBreaker: BrickBreakerView(state: state)
+                case .snake: SnakeView(state: state)
+                case .runner: RunnerView(state: state)
+                case .shootingGallery: GalleryView(state: state)
+                }
             }
         }
-        // The panel takes the game's shape; the controller resizes an open panel to match.
-        .onChange(of: game, initial: true) {
-            state.shape = game.panelShape
+        // The panel takes the game's shape, or the title's; the controller resizes an open panel to match.
+        .onChange(of: hasSeenTitle ? game.panelShape : .title, initial: true) { _, shape in
+            state.shape = shape
         }
     }
 }

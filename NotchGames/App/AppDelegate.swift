@@ -17,5 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let controller = NotchPanelController(state: panelState)
         controller.start()
         self.controller = controller
+        // A fresh install opens the panel on its own, so the title screen shows where the games live.
+        if !UserDefaults.standard.bool(forKey: TitleView.seenKey) { controller.playFromMenu() }
     }
 }

@@ -37,7 +37,6 @@ struct GameSettingsTab: View {
             if game == .snake {
                 Toggle(isOn: $snakeHasWalls) {
                     Text("walls")
-                    Text("on, hitting the edge ends the run; off, the snake comes out the other side")
                 }
             }
 

@@ -22,6 +22,8 @@ nonisolated struct PanelShape: Equatable {
     )
     /// Brick breaker: upright and always full size, so the wall has room to fall.
     static let tall = PanelShape(aspect: 0.8, maxHeight: 600, minOpenHeight: 600)
+    /// The title screen: one fixed size, whichever game is picked and however far the panel is pulled.
+    static let title = PanelShape(aspect: 1.6, maxHeight: 300, minOpenHeight: 300)
 
     func openHeight(for requested: CGFloat) -> CGFloat {
         min(max(requested, minOpenHeight), maxHeight)

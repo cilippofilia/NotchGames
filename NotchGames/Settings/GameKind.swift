@@ -23,6 +23,13 @@ nonisolated enum GameKind: String, CaseIterable, Identifiable {
 
     var id: Self { self }
 
+    /// The game `step` places along the list, wrapping around at both ends; the title screen's arrows.
+    func neighbor(_ step: Int) -> GameKind {
+        let all = Self.allCases
+        let index = all.firstIndex(of: self) ?? 0
+        return all[((index + step) % all.count + all.count) % all.count]
+    }
+
     /// The panel's shape and sizes. The court fills the panel, so its aspect is also the court's.
     var panelShape: PanelShape {
         switch self {
