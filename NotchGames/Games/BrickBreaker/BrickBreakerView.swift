@@ -118,12 +118,29 @@ struct BrickBreakerView: View {
         if !waiting {
             CourtEffects.drawTrail(game.ballTrail.map { center($0.position) }, radius: radius, in: &context)
         }
-        let ball = center(model.ball.position)
-        CourtEffects.glow(
-            Path(ellipseIn: CGRect(x: ball.x - radius, y: ball.y - radius, width: radius * 2, height: radius * 2)),
-            color: Palette.ball.opacity(waiting ? CourtEffects.waitingOpacity : 1),
-            in: &context
-        )
+        let opacity = waiting ? CourtEffects.waitingOpacity : 1
+        for powerUp in model.powerUps {
+            let capsule = place(powerUp.rect)
+            CourtEffects.glow(
+                Path(roundedRect: capsule, cornerSize: CGSize(width: capsule.height / 2, height: capsule.height / 2)),
+                color: color(for: powerUp.kind).opacity(opacity),
+                in: &context
+            )
+        }
+        let balls = [(model.ball, Palette.ball)] + model.extraBalls.map { ($0, Palette.extraBall) }
+        for (ball, color) in balls {
+            let point = center(ball.position)
+            let disc = CGRect(x: point.x - radius, y: point.y - radius, width: radius * 2, height: radius * 2)
+            CourtEffects.glow(Path(ellipseIn: disc), color: color.opacity(opacity), in: &context)
+            // A ring marks balls that blast neighbors while a bomb is armed.
+            if model.bombHitsLeft > 0 {
+                context.stroke(
+                    Path(ellipseIn: disc.insetBy(dx: -radius * 0.6, dy: -radius * 0.6)),
+                    with: .color(Palette.bug.opacity(opacity)),
+                    lineWidth: 1.5
+                )
+            }
+        }
 
         for hit in [game.lastWallHit, game.lastBrickHit].compactMap({ $0 }) {
             CourtEffects.drawWallSpark(
@@ -140,6 +157,14 @@ struct BrickBreakerView: View {
 // MARK: - Drawing helpers
 
 extension BrickBreakerView {
+    private static func color(for kind: PowerUp.Kind) -> Color {
+        switch kind {
+        case .multiBall: Palette.extraBall
+        case .bomb: Palette.bug
+        case .slowdown: Palette.slowdown
+        }
+    }
+
     /// A new row slides in from above, so the whole wall starts one row higher and eases down.
     private static func drawWall(
         _ wall: BrickWall,

@@ -12,6 +12,10 @@ enum Palette {
     static let background = Color.black
     static let paddle = Color(red: 77 / 255, green: 252 / 255, blue: 196 / 255)
     static let ball = Color(red: 255 / 255, green: 79 / 255, blue: 163 / 255)
+    /// Bonus balls and the multi-ball capsule.
+    static let extraBall = Color(red: 255 / 255, green: 226 / 255, blue: 64 / 255)
+    /// The slowdown capsule.
+    static let slowdown = Color(red: 90 / 255, green: 170 / 255, blue: 255 / 255)
     static let neonText = Color(red: 57 / 255, green: 255 / 255, blue: 90 / 255)
     static let bug = Color(red: 255 / 255, green: 85 / 255, blue: 51 / 255)
     static let bugEyes = Color(red: 255 / 255, green: 236 / 255, blue: 224 / 255)

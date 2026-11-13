@@ -21,7 +21,7 @@ nonisolated struct BrickBreakerModel {
     static let startingRows = 3
     static let rowsPerLevel = 5
     // Starting values, tuned by playing.
-    static let baseBallSpeed: CGFloat = 0.7
+    static let baseBallSpeed: CGFloat = 0.6
     static let ballSpeedPerLevel: CGFloat = 0.08
     static let maxBallSpeed: CGFloat = 1.5
     static let baseRowInterval: TimeInterval = 10
@@ -29,10 +29,26 @@ nonisolated struct BrickBreakerModel {
     static let minRowInterval: TimeInterval = 3
     static let brickPoints = 10
     static let rowPoints = 25
+    /// Odds that a broken brick drops a power-up.
+    static let powerUpChance = 0.1
+    static let extraBallAngle: CGFloat = 0.5
+    /// Bricks a bomb power-up blasts through, each also breaking its eight neighbors.
+    static let bombHits = 3
+    static let slowFactor: CGFloat = 0.6
+    static let slowDuration: TimeInterval = 8
     private static let maxBounceAngle: CGFloat = .pi / 3
     private static let serveAngle: CGFloat = 0.3
 
+    /// The pink ball: losing it costs a life.
     var ball = Ball(position: .zero, velocity: .zero)
+    /// Yellow balls from the multi-ball power-up; they fall away without costing anything.
+    var extraBalls: [Ball] = []
+    var powerUps: [PowerUp] = []
+    /// Brick hits left that also blast the neighbors.
+    var bombHitsLeft = 0
+    var slowTimeLeft: TimeInterval = 0
+    /// Overridable so tests can force or prevent drops.
+    var powerUpChance = BrickBreakerModel.powerUpChance
     /// The paddle's center.
     var paddleX = courtSize.width / 2
     private(set) var wall = BrickWall(rows: startingRows)
@@ -47,10 +63,15 @@ nonisolated struct BrickBreakerModel {
     /// True for the step in which the ball got past the paddle.
     private(set) var lostBall = false
 
+    var paddleRect: CGRect {
+        CGRect(x: paddleX - Self.paddleWidth / 2, y: Self.paddleTop, width: Self.paddleWidth, height: Self.paddleHeight)
+    }
+
     var level: Int { 1 + rowsDropped / Self.rowsPerLevel }
 
     var ballSpeed: CGFloat {
         min(Self.baseBallSpeed + CGFloat(level - 1) * Self.ballSpeedPerLevel, Self.maxBallSpeed)
+            * (slowTimeLeft > 0 ? Self.slowFactor : 1)
     }
 
     var rowInterval: TimeInterval {
@@ -79,17 +100,24 @@ nonisolated struct BrickBreakerModel {
         let slices = max(Int((distance / Self.ballRadius).rounded(.up)), 1)
         let slice = time / CGFloat(slices)
         for _ in 0..<slices {
-            let start = ball.position
-            ball.position.x += ball.velocity.dx * slice
-            ball.position.y += ball.velocity.dy * slice
-            bounceOffWalls()
-            breakFirstHitBrick()
-            bounceOffPaddle(from: start)
-            // Lost once its center leaves the court, like the goal line in Pong.
-            if ball.position.y > Self.courtSize.height {
+            // Moved through locals: helpers mutate both the ball and the wall.
+            var main = ball
+            let mainLost = advance(&main, by: slice)
+            ball = main
+            var kept: [Ball] = []
+            for var extra in extraBalls {
+                if !advance(&extra, by: slice) { kept.append(extra) }
+            }
+            extraBalls = kept
+            if mainLost {
                 loseBall()
                 return
             }
+        }
+        movePowerUps(by: time)
+        if slowTimeLeft > 0 {
+            slowTimeLeft = max(slowTimeLeft - TimeInterval(time), 0)
+            if slowTimeLeft == 0 { matchBallToSpeed() }
         }
     }
 
@@ -101,7 +129,8 @@ nonisolated struct BrickBreakerModel {
         rowsDropped += 1
         score += Self.rowPoints
         if level != levelBefore { matchBallToSpeed() }
-        pushBallOutOfWall()
+        pushOutOfWall(&ball)
+        for index in extraBalls.indices { pushOutOfWall(&extraBalls[index]) }
         // The wall has reached the paddle once there's no room left for the ball between them,
         // so a row can never push the ball through the paddle and cost a life.
         if let bottom = wall.lowestBrickBottom, bottom > Self.paddleTop - 2 * Self.ballRadius {
@@ -124,7 +153,50 @@ nonisolated struct BrickBreakerModel {
 
     // MARK: - Private
 
-    private mutating func bounceOffWalls() {
+    /// Moves one ball one slice; true once it has left the bottom of the court, like the goal line in Pong.
+    private mutating func advance(_ ball: inout Ball, by time: CGFloat) -> Bool {
+        ball.position.x += ball.velocity.dx * time
+        ball.position.y += ball.velocity.dy * time
+        bounceOffWalls(&ball)
+        breakFirstHitBrick(&ball)
+        bounceOffPaddle(&ball)
+        return ball.position.y > Self.courtSize.height
+    }
+
+    /// Falls the capsules; the paddle catches any that touch it, and the rest drop out of the court.
+    private mutating func movePowerUps(by time: CGFloat) {
+        let paddle = paddleRect
+        var falling: [PowerUp] = []
+        for var powerUp in powerUps {
+            powerUp.position.y += PowerUp.fallSpeed * time
+            if powerUp.rect.intersects(paddle) {
+                activate(powerUp.kind)
+            } else if powerUp.rect.minY <= Self.courtSize.height {
+                falling.append(powerUp)
+            }
+        }
+        powerUps = falling
+    }
+
+    mutating func activate(_ kind: PowerUp.Kind) {
+        switch kind {
+        case .multiBall:
+            let start = CGPoint(x: paddleX, y: Self.paddleTop - Self.ballRadius - 0.01)
+            for angle in [-Self.extraBallAngle, Self.extraBallAngle] {
+                extraBalls.append(Ball(
+                    position: start,
+                    velocity: CGVector(dx: ballSpeed * sin(angle), dy: -ballSpeed * cos(angle))
+                ))
+            }
+        case .bomb:
+            bombHitsLeft = Self.bombHits
+        case .slowdown:
+            slowTimeLeft = Self.slowDuration
+            matchBallToSpeed()
+        }
+    }
+
+    private mutating func bounceOffWalls(_ ball: inout Ball) {
         let radius = Self.ballRadius
         if ball.position.x < radius {
             ball.position.x = 2 * radius - ball.position.x
@@ -143,35 +215,58 @@ nonisolated struct BrickBreakerModel {
     }
 
     /// Breaks at most one brick per slice and bounces off it, so every slice still collides.
-    private mutating func breakFirstHitBrick() {
+    private mutating func breakFirstHitBrick(_ ball: inout Ball) {
         for row in wall.rows.indices {
             for column in wall.rows[row].indices where wall.rows[row][column] {
                 let brick = wall.rect(row: row, column: column, courtWidth: Self.courtSize.width)
-                guard overlaps(brick) else { continue }
-                wall.breakBrick(row: row, column: column)
-                score += Self.brickPoints * level
+                guard overlaps(brick, ball) else { continue }
+                if bombHitsLeft > 0 {
+                    bombHitsLeft -= 1
+                    // Neighbors first: breaking the center can trim emptied rows off the bottom.
+                    for neighborRow in row - 1...row + 1 {
+                        for neighborColumn in column - 1...column + 1
+                        where (neighborRow, neighborColumn) != (row, column) {
+                            breakScoring(row: neighborRow, column: neighborColumn)
+                        }
+                    }
+                }
+                breakScoring(row: row, column: column)
                 brokenBrick = brick
-                bounce(off: brick)
+                bounce(&ball, off: brick)
                 return
             }
         }
     }
 
-    private func closestPoint(on rect: CGRect) -> CGPoint {
+    /// Breaks a standing brick for points, sometimes dropping a power-up. Off-wall or broken spots do nothing.
+    private mutating func breakScoring(row: Int, column: Int) {
+        guard wall.rows.indices.contains(row),
+              wall.rows[row].indices.contains(column),
+              wall.rows[row][column]
+        else { return }
+        let brick = wall.rect(row: row, column: column, courtWidth: Self.courtSize.width)
+        wall.breakBrick(row: row, column: column)
+        score += Self.brickPoints * level
+        if Double.random(in: 0..<1) < powerUpChance, let kind = PowerUp.Kind.allCases.randomElement() {
+            powerUps.append(PowerUp(kind: kind, position: CGPoint(x: brick.midX, y: brick.midY)))
+        }
+    }
+
+    private func closestPoint(on rect: CGRect, _ ball: Ball) -> CGPoint {
         CGPoint(
             x: min(max(ball.position.x, rect.minX), rect.maxX),
             y: min(max(ball.position.y, rect.minY), rect.maxY)
         )
     }
 
-    private func overlaps(_ rect: CGRect) -> Bool {
-        let closest = closestPoint(on: rect)
+    private func overlaps(_ rect: CGRect, _ ball: Ball) -> Bool {
+        let closest = closestPoint(on: rect, ball)
         return hypot(ball.position.x - closest.x, ball.position.y - closest.y) < Self.ballRadius
     }
 
     /// Reflects off the point of contact, so faces bounce straight and corners bounce at an angle.
-    private mutating func bounce(off brick: CGRect) {
-        let closest = closestPoint(on: brick)
+    private func bounce(_ ball: inout Ball, off brick: CGRect) {
+        let closest = closestPoint(on: brick, ball)
         var normal = CGVector(dx: ball.position.x - closest.x, dy: ball.position.y - closest.y)
         var length = hypot(normal.dx, normal.dy)
         if length == 0 {
@@ -191,15 +286,12 @@ nonisolated struct BrickBreakerModel {
         ball.position = CGPoint(x: closest.x + normal.dx * Self.ballRadius, y: closest.y + normal.dy * Self.ballRadius)
     }
 
-    /// Sends the ball back up, angled by how far from the paddle's center it landed, as in Pong.
-    private mutating func bounceOffPaddle(from start: CGPoint) {
-        let radius = Self.ballRadius
-        guard ball.velocity.dy > 0,
-              start.y + radius <= Self.paddleTop,
-              ball.position.y + radius > Self.paddleTop,
-              abs(ball.position.x - paddleX) <= Self.paddleWidth / 2 + radius
-        else { return }
-        ball.position.y = 2 * (Self.paddleTop - radius) - ball.position.y
+    /// The whole paddle is solid: touching the top, a side or a corner sends a falling ball back up,
+    /// angled by how far from the paddle's center it landed, as in Pong.
+    private func bounceOffPaddle(_ ball: inout Ball) {
+        guard ball.velocity.dy > 0, overlaps(paddleRect, ball) else { return }
+        // Lifted onto the paddle so a side hit can't leave it inside and bounce again.
+        ball.position.y = Self.paddleTop - Self.ballRadius
         let offset = min(max((ball.position.x - paddleX) / (Self.paddleWidth / 2), -1), 1)
         let angle = offset * Self.maxBounceAngle
         ball.velocity = CGVector(dx: ballSpeed * sin(angle), dy: -ballSpeed * cos(angle))
@@ -208,6 +300,7 @@ nonisolated struct BrickBreakerModel {
     private mutating func loseBall() {
         lives -= 1
         lostBall = true
+        clearPowerUps()
         if lives <= 0 {
             end()
         } else {
@@ -218,25 +311,38 @@ nonisolated struct BrickBreakerModel {
     private mutating func end() {
         isOver = true
         ball.velocity = .zero
+        clearPowerUps()
     }
 
-    /// A new level speeds the ball up mid-flight, keeping its direction.
+    /// A lost life or the end of the run takes every bonus with it.
+    private mutating func clearPowerUps() {
+        extraBalls = []
+        powerUps = []
+        bombHitsLeft = 0
+        slowTimeLeft = 0
+    }
+
+    /// A new level or a slowdown changes every ball's speed mid-flight, keeping its direction.
     private mutating func matchBallToSpeed() {
-        let current = hypot(ball.velocity.dx, ball.velocity.dy)
-        guard current > 0 else { return }
-        let scale = ballSpeed / current
-        ball.velocity = CGVector(dx: ball.velocity.dx * scale, dy: ball.velocity.dy * scale)
+        let speed = ballSpeed
+        func rescale(_ ball: inout Ball) {
+            let current = hypot(ball.velocity.dx, ball.velocity.dy)
+            guard current > 0 else { return }
+            ball.velocity = CGVector(dx: ball.velocity.dx * speed / current, dy: ball.velocity.dy * speed / current)
+        }
+        rescale(&ball)
+        for index in extraBalls.indices { rescale(&extraBalls[index]) }
     }
 
     /// A row landing on the ball pushes it down below whatever it now overlaps; it never breaks bricks.
-    private mutating func pushBallOutOfWall() {
+    private func pushOutOfWall(_ ball: inout Ball) {
         var moved = true
         while moved {
             moved = false
             for row in wall.rows.indices {
                 for column in wall.rows[row].indices where wall.rows[row][column] {
                     let brick = wall.rect(row: row, column: column, courtWidth: Self.courtSize.width)
-                    if overlaps(brick) {
+                    if overlaps(brick, ball) {
                         ball.position.y = brick.maxY + Self.ballRadius + 0.001
                         moved = true
                     }
