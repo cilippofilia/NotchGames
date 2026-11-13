@@ -117,6 +117,17 @@ struct GalleryModelTests {
         #expect(model.score == 10 * 100 + GalleryModel.perfectBonus)
     }
 
+    @Test mutating func newBirdsClimbOutOfTheGround() {
+        var model = GalleryModel()
+        run(&model) { !$0.birds.isEmpty }
+        model.step(by: Self.frame, generator: &generator)
+        for bird in model.birds {
+            #expect(bird.velocity.dy < 0)
+            // Risen one frame's flight from the ground, not snapped up to the flight floor.
+            #expect(GalleryModel.groundY - bird.position.y < model.flightSpeed * 2 * Self.frame)
+        }
+    }
+
     @Test mutating func flyingBirdsStayInTheCourt() {
         var model = GalleryModel()
         run(&model) { !$0.birds.isEmpty }

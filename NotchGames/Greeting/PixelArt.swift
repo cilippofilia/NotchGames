@@ -7,14 +7,6 @@
 
 /// Helpers for pixel art stored as rows of characters, where `.` is an unlit dot.
 nonisolated enum PixelArt {
-    /// Makes every dot `factor` × `factor` dots.
-    static func scale(_ rows: [String], by factor: Int) -> [String] {
-        rows.flatMap { row in
-            let wide = String(row.flatMap { repeatElement($0, count: factor) })
-            return Array(repeating: wide, count: factor)
-        }
-    }
-
     /// Bold version: each lit dot also lights the dot to its right, so rows grow one column.
     static func embolden(_ rows: [String]) -> [String] {
         rows.map { row in

@@ -65,12 +65,13 @@ struct PongEffectsTests {
     }
 
     @Test func wallSparkFliesBackIntoTheCourt() {
-        let fromTop = Explosion.wallSpark(age: 0.1, hitTop: true)
-        let fromBottom = Explosion.wallSpark(age: 0.1, hitTop: false)
+        // Court y runs down, so the top wall's spark flies down and the bottom wall's flies up.
+        let fromTop = Explosion.spark(age: 0.1, inward: CGVector(dx: 0, dy: 1))
+        let fromBottom = Explosion.spark(age: 0.1, inward: CGVector(dx: 0, dy: -1))
         #expect(!fromTop.isEmpty)
         #expect(fromTop.allSatisfy { $0.offset.dy >= 0 })
         #expect(fromBottom.allSatisfy { $0.offset.dy <= 0 })
-        #expect(Explosion.wallSpark(age: Explosion.sparkDuration, hitTop: true).isEmpty)
+        #expect(Explosion.spark(age: Explosion.sparkDuration, inward: CGVector(dx: 0, dy: 1)).isEmpty)
     }
 
     @Test func courtSitsCloseToThePanelEdges() {

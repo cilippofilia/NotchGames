@@ -38,10 +38,10 @@ final class NotchPanelController: NSObject {
     private static let virtualNeckWidth: CGFloat = 190
     /// The drop has to be at least this long before it can be grabbed.
     private static let minGrabLength: CGFloat = 10
-    /// Tall enough for the panel at full stretch plus spring overshoot, and the gutter below it.
+    /// Tall enough for the panel at full stretch plus spring overshoot. The gutter needs no room: the pointer is
+    /// read across the whole screen.
     private static let overlayHeight: CGFloat = (tallestBody + PullSizing.maxStretch) * 1.2
     private static let tallestBody = GameKind.allCases.map(\.panelShape.maxHeight).max() ?? PullSizing.maxBodyHeight
-        + GutterSize.largest.points
 
     init(state: PanelState) {
         self.state = state

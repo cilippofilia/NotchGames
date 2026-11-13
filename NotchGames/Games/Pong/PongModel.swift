@@ -19,8 +19,6 @@ nonisolated struct PongModel {
     static let speedUpPerHit: CGFloat = 1.05
     static let maxSpeed: CGFloat = 2.0
     static let winningScore = 5
-    /// Longest step simulated at once, so a late frame can't teleport the ball.
-    static let maxStep: TimeInterval = 1.0 / 30
     private static let maxBounceAngle: CGFloat = .pi / 3
 
     var ball: Ball
@@ -43,7 +41,7 @@ nonisolated struct PongModel {
     mutating func step(by interval: TimeInterval) {
         guard winner == nil else { return }
         wallBounce = nil
-        let time = CGFloat(min(interval, Self.maxStep))
+        let time = CGFloat(min(interval, MatchClock.maxStep))
         let start = ball.position
         var end = CGPoint(x: start.x + ball.velocity.dx * time, y: start.y + ball.velocity.dy * time)
 

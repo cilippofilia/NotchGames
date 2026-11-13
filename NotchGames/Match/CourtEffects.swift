@@ -95,7 +95,6 @@ enum CourtEffects {
         glow(teal, color: Palette.paddle.opacity(opacity), in: &context)
     }
 
-    /// Computer's score on the left, the player's on the right; the one that just changed pops up briefly.
     /// Fading, shrinking copies of the ball along its recent path, oldest first, in view points.
     static func drawTrail(_ centers: [CGPoint], radius: CGFloat, in context: inout GraphicsContext) {
         for (index, center) in centers.enumerated() {

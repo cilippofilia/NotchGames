@@ -9,8 +9,8 @@ import Testing
 @testable import NotchGames
 
 struct PixelArtTests {
-    @Test func greetingUsesOnlyKnownGlyphs() {
-        for character in "hello there" {
+    @Test func titleUsesOnlyKnownGlyphs() {
+        for character in "notchgames" {
             #expect(PixelFont.glyphs[character] != nil, "missing glyph for \(character)")
         }
     }
@@ -20,10 +20,6 @@ struct PixelArtTests {
         #expect(rows.count == PixelFont.height)
         let expectedWidth = PixelFont.glyphs["h"]![0].count + 1 + PixelFont.glyphs["i"]![0].count
         #expect(rows.allSatisfy { $0.count == expectedWidth })
-    }
-
-    @Test func scalingDoublesEveryPixel() {
-        #expect(PixelArt.scale(["#."], by: 2) == ["##..", "##.."])
     }
 
     @Test func stackingCentersTheNarrowerPiece() {

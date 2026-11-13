@@ -25,11 +25,6 @@ nonisolated enum Explosion {
         )
     }
 
-    /// The top wall is at y = 0 (court y runs down), so its spark flies down; the bottom wall's flies up.
-    static func wallSpark(age: TimeInterval, hitTop: Bool) -> [ExplosionParticle] {
-        spark(age: age, inward: CGVector(dx: 0, dy: hitTop ? 1 : -1))
-    }
-
     /// A small spark off any wall, flying back into the court along `inward`.
     static func spark(age: TimeInterval, inward: CGVector) -> [ExplosionParticle] {
         burst(age: age, duration: sparkDuration, inward: inward, count: 6, reach: 0.07)

@@ -128,9 +128,9 @@ nonisolated struct GalleryModel {
         }
         let ceiling = halfHeight + 0.05
         let floor = Self.groundY - halfHeight - 0.05
-        if bird.position.y < ceiling || bird.position.y > floor {
+        // Only a bird heading into the edge turns back, so a new pair climbs smoothly out of the ground below it.
+        if (bird.position.y < ceiling && bird.velocity.dy < 0) || (bird.position.y > floor && bird.velocity.dy > 0) {
             bird.velocity.dy = -bird.velocity.dy
-            bird.position.y = min(max(bird.position.y, ceiling), floor)
         }
     }
 
