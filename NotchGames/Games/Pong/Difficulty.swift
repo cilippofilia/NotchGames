@@ -51,6 +51,17 @@ nonisolated enum Difficulty: String, CaseIterable, Identifiable {
         }
     }
 
+    /// How cleverly the computer plays: 0 guesses and aims carelessly or at the player,
+    /// 1 reads the ball and aims for the open side.
+    var skill: CGFloat {
+        switch self {
+        case .easy: 0
+        case .moderate: 0.35
+        case .hard: 0.7
+        case .expert: 1
+        }
+    }
+
     /// How old the computer's view of the ball is.
     var reactionDelay: TimeInterval {
         switch self {

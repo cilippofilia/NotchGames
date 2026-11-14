@@ -31,6 +31,8 @@ final class AirHockeyGame {
     @ObservationIgnored private var playerAim: CGPoint
     /// Arrow and W/A/S/D keys being held; they steer the mallet each frame of play.
     @ObservationIgnored var heldKeys = HeldKeys()
+    @ObservationIgnored private var computer = AirHockeyOpponent()
+    @ObservationIgnored private var generator = SystemRandomNumberGenerator()
 
     /// The computer's mallet speed, scaled from the Pong paddle speed because it covers a whole half-court.
     private static let speedScale: CGFloat = 2.4
@@ -58,6 +60,7 @@ final class AirHockeyGame {
         lastWallHit = nil
         puckTrail = []
         playerAim = model.playerMallet
+        computer = AirHockeyOpponent()
         publishDisplay()
     }
 
@@ -77,7 +80,12 @@ final class AirHockeyGame {
         guard case .playing(let interval) = clock.advance(to: now) else { return }
         let step = HeldKeys.speed * interval
         nudgeAim(by: CGVector(dx: heldKeys.vector.dx * step, dy: heldKeys.vector.dy * step))
-        let computerTarget = AirHockeyOpponent.target(puck: model.puck, mallet: model.computerMallet)
+        let computerTarget = computer.target(
+            in: model,
+            difficulty: difficulty,
+            interval: interval,
+            using: &generator
+        )
         let puckBefore = model.puck.position
         let scoresBefore = (model.playerScore, model.computerScore)
         model.step(
@@ -94,6 +102,8 @@ final class AirHockeyGame {
         guard (model.playerScore, model.computerScore) != scoresBefore else { return }
         // The puck is back at the center, so its old trail would streak across the rink.
         puckTrail = []
+        // A fresh start, so it doesn't react to where the puck was before the serve.
+        computer = AirHockeyOpponent()
         let side: PongSide = model.playerScore != scoresBefore.0 ? .player : .computer
         lastPoint = PointEvent(
             side: side,
