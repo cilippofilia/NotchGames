@@ -44,7 +44,7 @@ struct MatchMessageView: View {
                 Text(winner == .player ? "you win" : "computer wins")
                     .font(.system(.title, design: .monospaced))
                     .bold()
-                    .foregroundStyle(winner == .player ? Palette.paddle : Palette.ball)
+                    .foregroundStyle(winner == .player ? Palette.player : Palette.opponent)
                 if streak > 0 {
                     Text("streak \(streak)")
                         .font(.system(.headline, design: .monospaced))
