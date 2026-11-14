@@ -1,3 +1,5 @@
+![NotchGames: pong, brick breaker, snake, runner and shooting gallery panels under the notch](docs/media/banner.png)
+
 # NotchGames
 
 ![macOS 26+](https://img.shields.io/badge/macOS-26%2B-black?logo=apple)
@@ -8,7 +10,7 @@ A small macOS menu bar app with six neon arcade games that you pull out of the n
 
 **[Download NotchGames](https://cilippofilia.dev/notchgames)**
 
-[//]: # (Add a screenshot or short GIF of the drop opening into a game here; it's the fastest way to show what the app does.)
+<p align="center"><img src="docs/media/demo.gif" width="800" alt="NotchGames demo: a neon pong panel open under the notch"></p>
 
 ## Games
 
