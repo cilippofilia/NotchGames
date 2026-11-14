@@ -100,10 +100,12 @@ struct PongView: View {
         // Each paddle sits just behind its face: left of it for the computer, right of it for the player.
         let computerFace = court.minX + PongModel.paddleInset * scaleX
         let playerFace = court.minX + (PongModel.courtSize.width - PongModel.paddleInset) * scaleX
-        var paddles = Path()
-        for (left, centerY) in [(computerFace - paddleWidth, model.computerY), (playerFace, model.playerY)] {
-            paddles.addRoundedRect(
-                in: CGRect(
+        for (left, centerY, color) in [
+            (computerFace - paddleWidth, model.computerY, Palette.opponent),
+            (playerFace, model.playerY, Palette.player)
+        ] {
+            let paddle = Path(
+                roundedRect: CGRect(
                     x: left,
                     y: court.minY + centerY * scaleY - paddleHeight / 2,
                     width: paddleWidth,
@@ -111,8 +113,8 @@ struct PongView: View {
                 ),
                 cornerSize: CGSize(width: paddleWidth / 2, height: paddleWidth / 2)
             )
+            CourtEffects.glow(paddle, color: color, in: &context)
         }
-        CourtEffects.glow(paddles, color: Palette.paddle, in: &context)
 
         // The trail freezes while waiting, so hide it rather than leave a stuck streak.
         if !game.isPaused, game.countdown <= 0 {

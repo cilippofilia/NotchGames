@@ -45,6 +45,7 @@ final class PongGame {
     }
     var opponentSpeed: CGFloat { computer.maxSpeed }
     @ObservationIgnored private var computer = ComputerOpponent()
+    @ObservationIgnored private var generator = SystemRandomNumberGenerator()
     /// Called once when a match is decided, with the side that won.
     @ObservationIgnored var onMatchEnd: ((PongSide) -> Void)?
     /// Where the player last aimed while the paddles were frozen; applied when play starts.
@@ -94,7 +95,13 @@ final class PongGame {
             interval = step
         }
         nudgePlayerPaddle(by: heldKeys.vector.dy * HeldKeys.speed * interval)
-        model.computerY = computer.nextPaddleY(current: model.computerY, ball: model.ball, interval: interval)
+        model.computerY = computer.nextPaddleY(
+            current: model.computerY,
+            ball: model.ball,
+            playerY: model.playerY,
+            interval: interval,
+            using: &generator
+        )
         let playerScoreBefore = model.playerScore
         let computerScoreBefore = model.computerScore
         let ballBefore = model.ball.position
@@ -109,6 +116,8 @@ final class PongGame {
         guard model.playerScore != playerScoreBefore || model.computerScore != computerScoreBefore else { return }
         // The ball is back at the center, so its old trail would streak across the court.
         ballTrail = []
+        // A serve toward the computer keeps the ball heading its way, so start fresh to plan the new shot.
+        computer = ComputerOpponent(difficulty: difficulty)
         let side: PongSide = model.playerScore != playerScoreBefore ? .player : .computer
         let exitY = min(max(ballBefore.y, 0), PongModel.courtSize.height)
         lastPoint = PointEvent(

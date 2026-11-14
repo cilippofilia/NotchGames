@@ -98,16 +98,14 @@ struct AirHockeyView: View {
 
         drawRink(in: court, scaleY: scaleY, context: &context)
 
-        var mallets = Path()
-        for mallet in [model.computerMallet, model.playerMallet] {
+        for (mallet, color) in [(model.computerMallet, Palette.opponent), (model.playerMallet, Palette.player)] {
             let center = place(mallet)
             let radius = AirHockeyModel.malletRadius * unit
             let bounds = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
-            mallets.addEllipse(in: bounds)
-        }
-        context.drawLayer { layer in
-            layer.addFilter(.shadow(color: Palette.paddle, radius: 8))
-            layer.stroke(mallets, with: .color(Palette.paddle), lineWidth: 3)
+            context.drawLayer { layer in
+                layer.addFilter(.shadow(color: color, radius: 8))
+                layer.stroke(Path(ellipseIn: bounds), with: .color(color), lineWidth: 3)
+            }
         }
 
         let puckCenter = place(model.puck.position)
@@ -151,14 +149,15 @@ struct AirHockeyView: View {
             style: StrokeStyle(lineWidth: 2, dash: [6, 8])
         )
 
-        var goals = Path()
-        for edge in [court.minX, court.maxX] {
-            goals.move(to: CGPoint(x: edge, y: goalTop))
-            goals.addLine(to: CGPoint(x: edge, y: goalBottom))
-        }
-        context.drawLayer { layer in
-            layer.addFilter(.shadow(color: Palette.paddle, radius: 6))
-            layer.stroke(goals, with: .color(Palette.paddle), lineWidth: 4)
+        // The computer defends the left goal, the player the right.
+        for (edge, color) in [(court.minX, Palette.opponent), (court.maxX, Palette.player)] {
+            var goal = Path()
+            goal.move(to: CGPoint(x: edge, y: goalTop))
+            goal.addLine(to: CGPoint(x: edge, y: goalBottom))
+            context.drawLayer { layer in
+                layer.addFilter(.shadow(color: color, radius: 6))
+                layer.stroke(goal, with: .color(color), lineWidth: 4)
+            }
         }
     }
 }
