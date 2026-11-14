@@ -23,6 +23,20 @@ A small macOS menu bar app with six neon arcade games that you pull out of the n
 | **runner** | endless skater, best score | space/↑/W to jump (hold to jump higher), ↓/S to duck |
 | **shooting gallery** | rounds with a hit quota | click to shoot, 3 shots per pair of birds |
 
+<table>
+  <tr>
+    <td align="center"><img src="docs/media/pong-panel.png" width="400" alt="pong"><br>pong</td>
+    <td align="center"><img src="docs/media/snake-panel.png" width="400" alt="snake"><br>snake</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/media/runner-panel.png" width="400" alt="runner"><br>runner</td>
+    <td align="center"><img src="docs/media/shooting-gallery-panel.png" width="400" alt="shooting gallery"><br>shooting gallery</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="docs/media/brick-breaker-panel.png" width="300" alt="brick breaker"><br>brick breaker</td>
+  </tr>
+</table>
+
 Pick a game with the arrows on the title screen or in Settings.
 
 ## How it works
