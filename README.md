@@ -56,7 +56,7 @@ Coding agents and scripts can call you back from a game. Run:
 open -g notchgames://attention
 ```
 
-The notch glows (or, with the panel open, its outline pulses) until you move the pointer onto it. If the pointer is already on the panel mid-game, move it off and back on to clear the glow. `-g` keeps the terminal focused. With Reduce Motion on, the glow holds steady instead of pulsing. On a Mac without a notch, the glow only shows while the panel is open.
+The notch (or, with the panel open, its border) lights up and buzzes for 5 seconds, then stops on its own. There's nothing to dismiss, and a new ping restarts it. `-g` keeps the terminal focused. With Reduce Motion on, it glows without shaking. On a Mac without a notch it only shows while the panel is open.
 
 For Claude Code, add hooks to `~/.claude/settings.json` so it pings when it needs your input or finishes:
 

@@ -23,6 +23,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// `open -g notchgames://attention` from an agent's hook. Deliberately doesn't activate: the terminal keeps focus.
     func application(_ application: NSApplication, open urls: [URL]) {
-        if urls.contains(where: AttentionSignal.isRequest) { panelState.attention.ping() }
+        if urls.contains(where: AttentionSignal.isRequest) { panelState.attentionPings += 1 }
     }
 }

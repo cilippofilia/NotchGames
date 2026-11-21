@@ -47,3 +47,15 @@ waiting on you, the notch should catch your eye so you go back to it.
 
 ## Left to the builder
 The exact pulse look (color from `Palette`, timing, glow size), and whether the README shows the hook JSON in full.
+
+## Revision (2026-11-21): auto-stop instead of hover dismissal
+Trying it showed hover dismissal fails mid-game: the pointer is busy on the panel, and the `Stop` hook pings after
+every agent reply, so the pulse rarely ended. The final review also found that gutter slips cleared it by accident,
+that a no-notch Mac could clear it before anything was shown, and that the endless animation kept redrawing.
+Decided with the user:
+- Each ping plays once for **5 seconds**: the glow fades in, three short sideways buzzes (stronger than the old
+  breathing pulse), then fades out. There is no dismissal and no hover tracking. A new ping restarts it.
+- Built as a one-shot SwiftUI `keyframeAnimator` triggered by a ping counter on `PanelState`. One clock runs 0 to 5 s,
+  and `AttentionSignal.glow(at:)` and `shake(at:)` turn it into glow and offset. Those are pure functions, unit-tested.
+- Rejected: an on/off flag cleared by a controller timer. It has more moving parts and nothing else needs the flag.
+- Reduce Motion: glow only, no shake.

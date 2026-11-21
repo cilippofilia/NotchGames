@@ -10,60 +10,31 @@ import Testing
 @testable import NotchGames
 
 struct AttentionSignalTests {
-    @Test func startsOff() {
-        #expect(!AttentionSignal().isOn)
+    @Test func glowStartsAndEndsDark() {
+        #expect(AttentionSignal.glow(at: 0) == 0)
+        #expect(AttentionSignal.glow(at: AttentionSignal.duration) == 0)
     }
 
-    @Test func pingTurnsItOn() {
-        var signal = AttentionSignal()
-        signal.ping()
-        #expect(signal.isOn)
+    @Test func glowIsFullMidPing() {
+        #expect(AttentionSignal.glow(at: 2.5) == 1)
     }
 
-    @Test func pointerAlreadyInsideKeepsItOn() {
-        var signal = AttentionSignal()
-        signal.ping()
-        signal.pointer(isInside: true)
-        signal.pointer(isInside: true)
-        #expect(signal.isOn)
+    @Test func shakesAtTheStartOfEachBurst() {
+        let burstGap = AttentionSignal.duration / 3
+        for start in [0, burstGap, 2 * burstGap] {
+            #expect(abs(AttentionSignal.shake(at: start + 0.025)) > 2)
+        }
     }
 
-    @Test func enteringAfterThePingClearsIt() {
-        var signal = AttentionSignal()
-        signal.ping()
-        signal.pointer(isInside: false)
-        signal.pointer(isInside: true)
-        #expect(!signal.isOn)
-    }
-
-    @Test func leavingAndComingBackClearsIt() {
-        var signal = AttentionSignal()
-        signal.ping()
-        signal.pointer(isInside: true)
-        signal.pointer(isInside: false)
-        signal.pointer(isInside: true)
-        #expect(!signal.isOn)
-    }
-
-    @Test func stayingOutsideKeepsItOn() {
-        var signal = AttentionSignal()
-        signal.ping()
-        signal.pointer(isInside: false)
-        signal.pointer(isInside: false)
-        #expect(signal.isOn)
-    }
-
-    @Test func secondPingWhileOnStaysOn() {
-        var signal = AttentionSignal()
-        signal.ping()
-        signal.pointer(isInside: false)
-        signal.ping()
-        #expect(signal.isOn)
+    @Test func restsBetweenBurstsAndAfterThePing() {
+        #expect(AttentionSignal.shake(at: 1.0) == 0)
+        #expect(AttentionSignal.shake(at: AttentionSignal.duration) == 0)
     }
 
     @Test(arguments: [
         ("notchgames://attention", true),
         ("NotchGames://attention", true),
+        ("notchgames://Attention", true),
         ("notchgames://other", false),
         ("https://attention", false),
         ("notchgames:attention", false)

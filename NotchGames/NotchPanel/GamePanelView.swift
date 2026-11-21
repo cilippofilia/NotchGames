@@ -49,8 +49,8 @@ struct GamePanelView: View {
             Group {
                 shape.stroke(Palette.paddle.opacity(0.6), lineWidth: 2).blur(radius: 1.5)
                 shape.stroke(Palette.paddle.opacity(0.33), lineWidth: 1)
-                if state.attention.isOn {
-                    AttentionPulse { shape.stroke(Palette.paddle, lineWidth: 5).blur(radius: 3) }
+                AttentionPulse(pings: state.attentionPings) {
+                    shape.stroke(Palette.paddle, lineWidth: 5).blur(radius: 3)
                 }
             }
             .mask(LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.1)))
@@ -69,8 +69,8 @@ struct GamePanelView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .overlay(alignment: .top) {
             // Closed, the glow hangs just under the notch's bottom edge, notchCapHeight below the window top.
-            if state.attention.isOn, state.hasNotch, state.phase == .closed {
-                AttentionPulse {
+            if state.hasNotch, state.phase == .closed {
+                AttentionPulse(pings: state.attentionPings) {
                     Capsule()
                         .fill(Palette.paddle)
                         .frame(width: notchWidth, height: 6)

@@ -7,17 +7,22 @@
 
 import SwiftUI
 
-/// Breathes its content in and out while an agent wants attention; holds steady with Reduce Motion on.
+/// Plays once per agent ping: its content lights up and buzzes for `AttentionSignal.duration`, then goes dark.
+/// With Reduce Motion on it glows without shaking.
 struct AttentionPulse<Content: View>: View {
+    let pings: Int
     @ViewBuilder let content: Content
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        // One clock runs 0 → duration; the glow and shake are read off it.
         content
-            .phaseAnimator([0.25, 1]) { view, opacity in
-                view.opacity(reduceMotion ? 1 : opacity)
-            } animation: { _ in
-                .easeInOut(duration: 0.9)
+            .keyframeAnimator(initialValue: 0.0, trigger: pings) { view, time in
+                view
+                    .opacity(AttentionSignal.glow(at: time))
+                    .offset(x: reduceMotion ? 0 : AttentionSignal.shake(at: time))
+            } keyframes: { _ in
+                LinearKeyframe(AttentionSignal.duration, duration: AttentionSignal.duration)
             }
             .allowsHitTesting(false)
     }

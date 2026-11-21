@@ -154,7 +154,6 @@ final class NotchPanelController: NSObject {
             gutter: GutterSize.saved.points
         ) : nil
         if state.panelPointer != pointer { state.panelPointer = pointer }
-        updateAttention(location, in: geometry)
     }
 
     private func updatePull(_ pull: CGFloat) {
@@ -321,17 +320,5 @@ final class NotchPanelController: NSObject {
         displayLink?.preferredFrameRateRange = active
             ? CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
             : CAFrameRateRange(minimum: 10, maximum: 10, preferred: 10)
-    }
-}
-
-// MARK: - Agent attention
-
-extension NotchPanelController {
-    /// An agent's ping clears once the pointer moves onto the notch or the panel.
-    private func updateAttention(_ location: CGPoint, in geometry: NotchGeometry) {
-        guard state.attention.isOn else { return }
-        var attention = state.attention
-        attention.pointer(isInside: geometry.notchRect.contains(location) || dropRect(in: geometry).contains(location))
-        if state.attention != attention { state.attention = attention }
     }
 }
