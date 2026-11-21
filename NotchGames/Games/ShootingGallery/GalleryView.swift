@@ -79,6 +79,8 @@ struct GalleryView: View {
                 }
             }
         }
+        // Mid-round the crosshair is the pointer; it comes back for menus, pauses and the countdown.
+        .pointerVisibility(display.isPlaying ? .hidden : .automatic)
         .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
         .onChange(of: state.panelPointer) { _, pointer in
             game.pointerMoved(insidePanel: pointer.map { CGRect(origin: .zero, size: size).contains($0) })

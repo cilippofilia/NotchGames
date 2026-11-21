@@ -16,4 +16,9 @@ nonisolated struct GalleryDisplay: Equatable {
     var shotsLeft = GalleryModel.shotsPerWave
     /// The round just passed, while the game waits between rounds.
     var summary: RoundSummary?
+
+    /// Mid-round, with birds to shoot: the only time the crosshair stands in for the pointer.
+    var isPlaying: Bool {
+        !run.isPaused && run.countdownSeconds == 0 && !run.isOver && summary == nil
+    }
 }
