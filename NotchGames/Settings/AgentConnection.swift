@@ -22,6 +22,8 @@ final class AgentConnection {
         UserDefaults.standard.object(forKey: enabledKey) as? Bool ?? true
     }
 
+    /// Installed agents (their folder exists), each of which can be connected on its own.
+    private(set) var available: [Agent] = []
     /// Agents whose config has the ping now, so hand edits show up here.
     private(set) var connected: [Agent] = []
     private(set) var problem: String?
@@ -29,38 +31,32 @@ final class AgentConnection {
     var isConnected: Bool { !connected.isEmpty }
 
     func refresh() {
-        connected = (try? withHome { home in
-            Agent.allCases.filter { agent in
+        let found = try? withHome { home in
+            let available = Agent.allCases.filter { Self.isInstalled($0, in: home) }
+            let connected = available.filter { agent in
                 (try? agent.isInstalled(in: try? Data(contentsOf: Self.configFile(of: agent, in: home)))) == true
             }
-        }) ?? []
+            return (available, connected)
+        }
+        (available, connected) = found ?? ([], [])
     }
 
+    /// Asks for the home folder if needed, then connects every installed agent.
     func connect() {
         problem = nil
         do {
             if UserDefaults.standard.data(forKey: Self.bookmarkKey) == nil {
                 guard try askForHome() else { return }
             }
-            var failures: [String] = []
-            let found = try withHome { home in
-                Agent.allCases.filter { agent in
-                    var isFolder: ObjCBool = false
-                    let folder = home.appending(path: agent.folderName)
-                    guard FileManager.default.fileExists(atPath: folder.path, isDirectory: &isFolder),
-                          isFolder.boolValue else { return false }
-                    let file = Self.configFile(of: agent, in: home)
-                    do {
-                        try agent.installing(into: try? Data(contentsOf: file)).write(to: file, options: .atomic)
-                    } catch {
-                        failures.append(Self.message(for: error, agent: agent))
-                    }
-                    return true
+            let failures = try withHome { home in
+                Agent.allCases.filter { Self.isInstalled($0, in: home) }.compactMap { agent in
+                    Self.failure(agent) { try Self.install(agent, in: home) }
                 }
-            } ?? []
-            if found.isEmpty {
+            }
+            refresh()
+            if available.isEmpty {
                 problem = String(localized: "no claude code, codex or cursor found; copy the command below instead")
-            } else if !failures.isEmpty {
+            } else if let failures, !failures.isEmpty {
                 problem = failures.joined(separator: "\n")
             }
         } catch {
@@ -69,22 +65,26 @@ final class AgentConnection {
         refresh()
     }
 
+    /// Connects or disconnects one agent, keeping the others as they are.
+    func setConnected(_ agent: Agent, _ isOn: Bool) {
+        problem = nil
+        do {
+            problem = try withHome { home in
+                Self.failure(agent) { isOn ? try Self.install(agent, in: home) : try Self.remove(agent, in: home) }
+            } ?? nil
+        } catch {
+            problem = error.localizedDescription
+        }
+        refresh()
+    }
+
+    /// Removes the ping from every agent and forgets the home folder.
     func disconnect() {
         problem = nil
         do {
-            var failures: [String] = []
-            try withHome { home in
-                for agent in Agent.allCases {
-                    let file = Self.configFile(of: agent, in: home)
-                    // No file means no ping: nothing to remove.
-                    guard let config = try? Data(contentsOf: file), try agent.isInstalled(in: config) else { continue }
-                    do {
-                        try agent.removing(from: config).write(to: file, options: .atomic)
-                    } catch {
-                        failures.append(Self.message(for: error, agent: agent))
-                    }
-                }
-            }
+            let failures = try withHome { home in
+                Agent.allCases.compactMap { agent in Self.failure(agent) { try Self.remove(agent, in: home) } }
+            } ?? []
             if failures.isEmpty {
                 UserDefaults.standard.removeObject(forKey: Self.bookmarkKey)
             } else {
@@ -94,6 +94,34 @@ final class AgentConnection {
             problem = error.localizedDescription
         }
         refresh()
+    }
+
+    private static func isInstalled(_ agent: Agent, in home: URL) -> Bool {
+        var isFolder: ObjCBool = false
+        let folder = home.appending(path: agent.folderName)
+        return FileManager.default.fileExists(atPath: folder.path, isDirectory: &isFolder) && isFolder.boolValue
+    }
+
+    private static func install(_ agent: Agent, in home: URL) throws {
+        let file = configFile(of: agent, in: home)
+        try agent.installing(into: try? Data(contentsOf: file)).write(to: file, options: .atomic)
+    }
+
+    private static func remove(_ agent: Agent, in home: URL) throws {
+        let file = configFile(of: agent, in: home)
+        // No file or no ping: nothing to remove, and the file stays untouched.
+        guard let config = try? Data(contentsOf: file), try agent.isInstalled(in: config) else { return }
+        try agent.removing(from: config).write(to: file, options: .atomic)
+    }
+
+    /// Runs one agent's edit and turns an error into a line for the user.
+    private static func failure(_ agent: Agent, _ edit: () throws -> Void) -> String? {
+        do {
+            try edit()
+            return nil
+        } catch {
+            return message(for: error, agent: agent)
+        }
     }
 
     /// Returns false when the user cancels or picks another folder.

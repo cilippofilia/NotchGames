@@ -57,6 +57,12 @@ struct GeneralSettingsTab: View {
 
             Section("agent pings") {
                 AgentRow(connection: connection)
+                ForEach(connection.available) { agent in
+                    Toggle(agent.title, isOn: Binding(
+                        get: { connection.connected.contains(agent) },
+                        set: { connection.setConnected(agent, $0) }
+                    ))
+                }
                 if connection.isConnected {
                     Toggle(isOn: $agentPings) {
                         Text("pings")
