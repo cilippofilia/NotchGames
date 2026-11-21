@@ -21,6 +21,9 @@ struct MatchMessageView: View {
     var streak = 0
     let onRestart: () -> Void
 
+    @AppStorage(SideColor.playerStorageKey) private var playerColor = SideColor.playerStandard
+    @AppStorage(SideColor.computerStorageKey) private var computerColor = SideColor.computerStandard
+
     var body: some View {
         VStack {
             if let runResult {
@@ -42,7 +45,7 @@ struct MatchMessageView: View {
                 Text(winner == .player ? "you win" : "computer wins")
                     .font(.system(.title, design: .monospaced))
                     .bold()
-                    .foregroundStyle(winner == .player ? Palette.player : Palette.opponent)
+                    .foregroundStyle(winner == .player ? playerColor.color : computerColor.color)
                 if streak > 0 {
                     Text("streak \(streak)")
                         .font(.system(.headline, design: .monospaced))
@@ -82,7 +85,7 @@ struct MatchMessageView: View {
         winner: nil,
         isPaused: false,
         isCountingDown: false,
-       
+
         runResult: RunResult(score: 1240, best: 1240, isNewBest: true),
         onRestart: {}
     )

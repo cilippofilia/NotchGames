@@ -12,6 +12,8 @@ struct GeneralSettingsTab: View {
     @AppStorage(GameKind.storageKey) private var game = GameKind.standard
     @AppStorage(PanelSize.storageKey) private var panelSize = PanelSize.standard
     @AppStorage(GutterSize.storageKey) private var gutter = GutterSize.standard
+    @AppStorage(SideColor.playerStorageKey) private var playerColor = SideColor.playerStandard
+    @AppStorage(SideColor.computerStorageKey) private var computerColor = SideColor.computerStandard
     @State private var launchesAtLogin = LoginItem.isEnabled
     @AppStorage(AgentConnection.enabledKey) private var agentPings = true
     private let connection = AgentConnection.shared
@@ -44,6 +46,11 @@ struct GeneralSettingsTab: View {
                 Text("how far the pointer can stray before pong, air hockey or brick breaker pause")
             }
             .pickerStyle(.segmented)
+
+            Section("colors") {
+                SideColorPicker(title: "you", selection: $playerColor, other: $computerColor)
+                SideColorPicker(title: "computer", selection: $computerColor, other: $playerColor)
+            }
 
             Toggle(isOn: $launchesAtLogin) {
                 Text("launch at login")

@@ -21,6 +21,8 @@ struct TitleView: View {
 
     @AppStorage(GameKind.storageKey) private var game = GameKind.standard
     @AppStorage(Self.seenKey) private var hasSeenTitle = false
+    @AppStorage(SideColor.playerStorageKey) private var playerColor = SideColor.playerStandard
+    @AppStorage(SideColor.computerStorageKey) private var computerColor = SideColor.computerStandard
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
@@ -53,6 +55,12 @@ struct TitleView: View {
                     .keyboardShortcut(.rightArrow, modifiers: [])
             }
             .accessibilityElement(children: .contain)
+
+            HStack {
+                SideColorPicker(title: "you", selection: $playerColor, other: $computerColor)
+                SideColorPicker(title: "computer", selection: $computerColor, other: $playerColor)
+            }
+            .font(.callout)
 
             VStack {
                 Button("settings", systemImage: "gearshape") {

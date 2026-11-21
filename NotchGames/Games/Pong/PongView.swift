@@ -14,13 +14,21 @@ struct PongView: View {
 
     @State private var game = PongGame()
     @AppStorage(Difficulty.storageKey(for: .pong)) private var difficulty = Difficulty.standard
+    @AppStorage(SideColor.playerStorageKey) private var playerColor = SideColor.playerStandard
+    @AppStorage(SideColor.computerStorageKey) private var computerColor = SideColor.computerStandard
     @State private var size = CGSize.zero
     @FocusState private var isFocused: Bool
 
     var body: some View {
         TimelineView(.animation(paused: game.display.isPaused)) { timeline in
             Canvas { context, canvasSize in
-                Self.draw(game, at: timeline.date, in: &context, size: canvasSize)
+                Self.draw(
+                    game,
+                    colors: (playerColor.color, computerColor.color),
+                    at: timeline.date,
+                    in: &context,
+                    size: canvasSize
+                )
             }
             .onChange(of: timeline.date) { _, date in
                 game.tick(now: date)
@@ -85,7 +93,10 @@ struct PongView: View {
         )
     }
 
-    private static func draw(_ game: PongGame, at date: Date, in context: inout GraphicsContext, size: CGSize) {
+    private static func draw(
+        _ game: PongGame,
+        colors: (player: Color, computer: Color),
+        at date: Date, in context: inout GraphicsContext, size: CGSize) {
         let model = game.model
         let court = CourtLayout.rect(in: size)
         guard court.width > 0, court.height > 0 else { return }
@@ -100,8 +111,8 @@ struct PongView: View {
         let computerFace = court.minX + PongModel.paddleInset * scaleX
         let playerFace = court.minX + (PongModel.courtSize.width - PongModel.paddleInset) * scaleX
         for (left, centerY, color) in [
-            (computerFace - paddleWidth, model.computerY, Palette.opponent),
-            (playerFace, model.playerY, Palette.player)
+            (computerFace - paddleWidth, model.computerY, colors.computer),
+            (playerFace, model.playerY, colors.player)
         ] {
             let paddle = Path(
                 roundedRect: CGRect(

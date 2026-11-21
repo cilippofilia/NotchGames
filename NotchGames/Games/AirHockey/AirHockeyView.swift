@@ -14,13 +14,21 @@ struct AirHockeyView: View {
 
     @State private var game = AirHockeyGame()
     @AppStorage(Difficulty.storageKey(for: .airHockey)) private var difficulty = Difficulty.standard
+    @AppStorage(SideColor.playerStorageKey) private var playerColor = SideColor.playerStandard
+    @AppStorage(SideColor.computerStorageKey) private var computerColor = SideColor.computerStandard
     @State private var size = CGSize.zero
     @FocusState private var isFocused: Bool
 
     var body: some View {
         TimelineView(.animation(paused: game.display.isPaused)) { timeline in
             Canvas { context, canvasSize in
-                Self.draw(game, at: timeline.date, in: &context, size: canvasSize)
+                Self.draw(
+                    game,
+                    colors: (playerColor.color, computerColor.color),
+                    at: timeline.date,
+                    in: &context,
+                    size: canvasSize
+                )
             }
             .onChange(of: timeline.date) { _, date in
                 game.tick(now: date)
@@ -84,7 +92,10 @@ struct AirHockeyView: View {
         .accessibilityValue("you \(game.display.playerScore), computer \(game.display.computerScore)")
     }
 
-    private static func draw(_ game: AirHockeyGame, at date: Date, in context: inout GraphicsContext, size: CGSize) {
+    private static func draw(
+        _ game: AirHockeyGame,
+        colors: (player: Color, computer: Color),
+        at date: Date, in context: inout GraphicsContext, size: CGSize) {
         let model = game.model
         let court = CourtLayout.rect(in: size)
         guard court.width > 0, court.height > 0 else { return }
@@ -95,9 +106,9 @@ struct AirHockeyView: View {
             CGPoint(x: court.minX + point.x * scaleX, y: court.minY + point.y * scaleY)
         }
 
-        drawRink(in: court, scaleY: scaleY, context: &context)
+        drawRink(in: court, scaleY: scaleY, colors: colors, context: &context)
 
-        for (mallet, color) in [(model.computerMallet, Palette.opponent), (model.playerMallet, Palette.player)] {
+        for (mallet, color) in [(model.computerMallet, colors.computer), (model.playerMallet, colors.player)] {
             let center = place(mallet)
             let radius = AirHockeyModel.malletRadius * unit
             let bounds = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
@@ -131,7 +142,12 @@ struct AirHockeyView: View {
     }
 
     /// Bright goal mouths at both ends, the center line and the center circle.
-    private static func drawRink(in court: CGRect, scaleY: CGFloat, context: inout GraphicsContext) {
+    private static func drawRink(
+        in court: CGRect,
+        scaleY: CGFloat,
+        colors: (player: Color, computer: Color),
+        context: inout GraphicsContext
+    ) {
         CourtEffects.drawCenterLine(in: court, context: &context)
         let goalTop = court.minY + (AirHockeyModel.courtSize.height / 2 - AirHockeyModel.goalHalfHeight) * scaleY
         let goalBottom = court.minY + (AirHockeyModel.courtSize.height / 2 + AirHockeyModel.goalHalfHeight) * scaleY
@@ -149,7 +165,7 @@ struct AirHockeyView: View {
         )
 
         // The computer defends the left goal, the player the right.
-        for (edge, color) in [(court.minX, Palette.opponent), (court.maxX, Palette.player)] {
+        for (edge, color) in [(court.minX, colors.computer), (court.maxX, colors.player)] {
             var goal = Path()
             goal.move(to: CGPoint(x: edge, y: goalTop))
             goal.addLine(to: CGPoint(x: edge, y: goalBottom))
