@@ -39,6 +39,17 @@ struct GalleryGameTests {
         #expect(game.display.run.isPaused)
     }
 
+    @Test func onlyMidRoundCountsAsPlaying() throws {
+        let game = GalleryGame(stats: try freshStats())
+        #expect(!game.display.isPlaying)
+        game.pointerMoved(insidePanel: true)
+        #expect(!game.display.isPlaying)
+        run(game, from: .now, for: GalleryGame.countdownLength + 0.1)
+        #expect(game.display.isPlaying)
+        game.pointerMoved(insidePanel: nil)
+        #expect(!game.display.isPlaying)
+    }
+
     @Test func shotsDontCountDuringTheCountdown() throws {
         let game = GalleryGame(stats: try freshStats())
         game.pointerMoved(insidePanel: true)

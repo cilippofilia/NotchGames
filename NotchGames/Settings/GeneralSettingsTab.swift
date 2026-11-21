@@ -55,26 +55,15 @@ struct GeneralSettingsTab: View {
                 launchesAtLogin = LoginItem.isEnabled
             }
 
-            Section {
-                if connection.isConnected {
-                    Toggle(isOn: $agentPings) {
-                        Text("claude code pings")
-                        Text("light up the notch when claude code needs you or finishes")
-                    }
-                    LabeledContent("remove the pings from claude code's settings") {
-                        Button("delete", role: .destructive, action: connection.disconnect)
-                    }
-                } else {
-                    LabeledContent {
-                        Button("connect", action: connection.connect)
-                    } label: {
-                        Text("claude code")
-                        Text("light up the notch when claude code needs you or finishes")
-                    }
+            Section("agent pings") {
+                Toggle(isOn: $agentPings) {
+                    Text("pings")
+                    Text("light up the notch when an agent needs you or finishes")
                 }
-                if let problem = connection.problem {
-                    Text(problem).foregroundStyle(.red)
+                ForEach(Agent.allCases) { agent in
+                    AgentRow(agent: agent, connection: connection)
                 }
+                PingCommandRow()
             }
         }
         .onAppear(perform: connection.refresh)
