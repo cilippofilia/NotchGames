@@ -7,25 +7,27 @@
 
 import SwiftUI
 
-/// One agent in Settings: connect it, or delete its ping once connected.
+/// The single agent link in Settings: connect finds the installed agents, delete removes the ping from all of them.
 struct AgentRow: View {
-    let agent: Agent
     let connection: AgentConnection
 
     var body: some View {
         LabeledContent {
-            if connection.connected.contains(agent) {
-                Button("delete", systemImage: "trash", role: .destructive) { connection.disconnect(agent) }
+            if connection.isConnected {
+                Button("delete", systemImage: "trash", role: .destructive, action: connection.disconnect)
                     .foregroundStyle(.red)
             } else {
-                Button("connect") { connection.connect(agent) }
+                Button("connect", action: connection.connect)
             }
         } label: {
-            Text(agent.title)
-            if let problem = connection.problems[agent] {
-                Text(problem).foregroundStyle(.red)
+            Text("coding agents")
+            if connection.isConnected {
+                Text("connected: \(connection.connected.map(\.title).formatted(.list(type: .and)))")
             } else {
-                Text(connection.connected.contains(agent) ? "connected" : "not connected")
+                Text("finds claude code, codex or cursor and pings when they need you or finish")
+            }
+            if let problem = connection.problem {
+                Text(problem).foregroundStyle(.red)
             }
         }
     }

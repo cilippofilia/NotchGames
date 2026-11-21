@@ -58,7 +58,7 @@ open -g notchgames://attention
 
 The notch (or, with the panel open, its border) lights up and sends ripples for 5 seconds, then stops on its own. There's nothing to dismiss, and a new ping restarts it. `-g` keeps the terminal focused. With Reduce Motion on, it glows without rippling. On a Mac without a notch it only shows while the panel is open.
 
-To set it up, open Settings, go to the **General** tab and find **agent pings**. **connect** adds the ping to Claude Code (`~/.claude/settings.json`), Codex (`~/.codex/config.toml`) or Cursor (`~/.cursor/hooks.json`). macOS asks once for access to that folder. The trash button removes the ping again, and the **pings** toggle mutes every agent without touching their configs. For any other agent, copy the command and run it from that agent's hook or script.
+To set it up, open Settings, go to the **General** tab and click **connect** under **agent pings**. macOS asks once for access to your home folder. NotchGames then finds Claude Code (`~/.claude/settings.json`), Codex (`~/.codex/config.toml`) and Cursor (`~/.cursor/hooks.json`) and adds the ping to each one it finds. The trash button removes the ping from all of them, and the **pings** toggle mutes them without touching their configs. For any other agent, copy the command and run it from that agent's hook or script.
 
 ## Settings
 

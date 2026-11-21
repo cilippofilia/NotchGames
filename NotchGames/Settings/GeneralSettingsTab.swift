@@ -56,12 +56,12 @@ struct GeneralSettingsTab: View {
             }
 
             Section("agent pings") {
-                Toggle(isOn: $agentPings) {
-                    Text("pings")
-                    Text("light up the notch when an agent needs you or finishes")
-                }
-                ForEach(Agent.allCases) { agent in
-                    AgentRow(agent: agent, connection: connection)
+                AgentRow(connection: connection)
+                if connection.isConnected {
+                    Toggle(isOn: $agentPings) {
+                        Text("pings")
+                        Text("light up the notch when an agent needs you or finishes")
+                    }
                 }
                 PingCommandRow()
             }
