@@ -7,20 +7,28 @@
 
 import SwiftUI
 
-/// Plays once per agent ping: its content lights up and buzzes for `AttentionSignal.duration`, then goes dark.
-/// With Reduce Motion on it glows without shaking.
-struct AttentionPulse<Content: View>: View {
+/// Plays once per agent ping for `AttentionSignal.duration`: `ring(0)` glows steadily while ripples, `ring` drawn at
+/// their progress 0..<1, travel out and fade. With Reduce Motion on it only glows.
+struct AttentionPulse<Ring: View>: View {
     let pings: Int
-    @ViewBuilder let content: Content
+    @ViewBuilder let ring: (Double) -> Ring
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        // One clock runs 0 → duration; the glow and shake are read off it.
-        content
-            .keyframeAnimator(initialValue: 0.0, trigger: pings) { view, time in
-                view
-                    .opacity(AttentionSignal.glow(at: time))
-                    .offset(x: reduceMotion ? 0 : AttentionSignal.shake(at: time))
+        // One clock runs 0 → duration; the glow and ripples are read off it.
+        Color.clear
+            .keyframeAnimator(initialValue: 0.0, trigger: pings) { _, time in
+                let glow = AttentionSignal.glow(at: time)
+                ZStack {
+                    ring(0).opacity(glow)
+                    if !reduceMotion {
+                        ForEach(0..<AttentionSignal.rippleCount, id: \.self) { index in
+                            if let progress = AttentionSignal.rippleProgress(index, at: time) {
+                                ring(progress).opacity(glow * (1 - progress))
+                            }
+                        }
+                    }
+                }
             } keyframes: { _ in
                 LinearKeyframe(AttentionSignal.duration, duration: AttentionSignal.duration)
             }

@@ -59,3 +59,8 @@ Decided with the user:
   and `AttentionSignal.glow(at:)` and `shake(at:)` turn it into glow and offset. Those are pure functions, unit-tested.
 - Rejected: an on/off flag cleared by a controller timer. It has more moving parts and nothing else needs the flag.
 - Reduce Motion: glow only, no shake.
+
+## Revision 2 (2026-11-21): ripples instead of a sideways buzz
+Decided with the user after trying the buzz: each of the three bursts sends two ripples off the border. The panel's
+clip hides anything outside its outline, so open-panel ripples travel inward from the border; closed, the glow under
+the notch spreads wider and fades. Reduce Motion keeps only the steady glow.

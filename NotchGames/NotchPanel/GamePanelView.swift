@@ -49,8 +49,16 @@ struct GamePanelView: View {
             Group {
                 shape.stroke(Palette.paddle.opacity(0.6), lineWidth: 2).blur(radius: 1.5)
                 shape.stroke(Palette.paddle.opacity(0.33), lineWidth: 1)
-                AttentionPulse(pings: state.attentionPings) {
-                    shape.stroke(Palette.paddle, lineWidth: 5).blur(radius: 3)
+                AttentionPulse(pings: state.attentionPings) { progress in
+                    // The clip hides everything outside the border, so ripples travel inward: a band `depth` in,
+                    // cut out of a wider stroke.
+                    let depth = progress * 40
+                    ZStack {
+                        shape.stroke(Palette.paddle, lineWidth: 2 * depth + 6)
+                        shape.stroke(.black, lineWidth: 2 * depth).blendMode(.destinationOut)
+                    }
+                    .compositingGroup()
+                    .blur(radius: 3)
                 }
             }
             .mask(LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.1)))
@@ -70,11 +78,11 @@ struct GamePanelView: View {
         .overlay(alignment: .top) {
             // Closed, the glow hangs just under the notch's bottom edge, notchCapHeight below the window top.
             if state.hasNotch, state.phase == .closed {
-                AttentionPulse(pings: state.attentionPings) {
+                AttentionPulse(pings: state.attentionPings) { progress in
                     Capsule()
                         .fill(Palette.paddle)
-                        .frame(width: notchWidth, height: 6)
-                        .blur(radius: 5)
+                        .frame(width: notchWidth * (1 + 0.5 * progress), height: 6 + 14 * progress)
+                        .blur(radius: 5 + 4 * progress)
                 }
                 .offset(y: DropGeometry.notchCapHeight - 3)
             }

@@ -19,16 +19,31 @@ struct AttentionSignalTests {
         #expect(AttentionSignal.glow(at: 2.5) == 1)
     }
 
-    @Test func shakesAtTheStartOfEachBurst() {
+    @Test func firstRippleStartsAtTheBorderAndTravelsOut() throws {
+        #expect(AttentionSignal.rippleProgress(0, at: 0) == 0)
+        let halfway = try #require(AttentionSignal.rippleProgress(0, at: AttentionSignal.rippleLength / 2))
+        #expect(abs(halfway - 0.5) < 0.001)
+    }
+
+    @Test func rippleIsGoneOutsideItsLifetime() {
+        #expect(AttentionSignal.rippleProgress(0, at: AttentionSignal.rippleLength) == nil)
+        #expect(AttentionSignal.rippleProgress(1, at: 0) == nil)
+    }
+
+    @Test func eachBurstStartsARipple() {
         let burstGap = AttentionSignal.duration / 3
         for start in [0, burstGap, 2 * burstGap] {
-            #expect(abs(AttentionSignal.shake(at: start + 0.025)) > 2)
+            let fresh = (0..<AttentionSignal.rippleCount).contains {
+                (AttentionSignal.rippleProgress($0, at: start + 0.01) ?? 1) < 0.05
+            }
+            #expect(fresh)
         }
     }
 
-    @Test func restsBetweenBurstsAndAfterThePing() {
-        #expect(AttentionSignal.shake(at: 1.0) == 0)
-        #expect(AttentionSignal.shake(at: AttentionSignal.duration) == 0)
+    @Test func noRippleOutlivesThePing() {
+        for index in 0..<AttentionSignal.rippleCount {
+            #expect(AttentionSignal.rippleProgress(index, at: AttentionSignal.duration) == nil)
+        }
     }
 
     @Test(arguments: [
