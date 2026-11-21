@@ -7,7 +7,7 @@
 
 import Foundation
 
-/// An agent's "come back" ping, sent with `open -g notchgames://attention`, held until the pointer moves onto the notch.
+/// An agent's "come back" ping (`open -g notchgames://attention`), held until the pointer moves onto the notch.
 nonisolated struct AttentionSignal: Equatable {
     private(set) var isOn = false
     private var pointerWasInside = false

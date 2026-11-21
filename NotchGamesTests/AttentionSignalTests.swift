@@ -66,7 +66,7 @@ struct AttentionSignalTests {
         ("NotchGames://attention", true),
         ("notchgames://other", false),
         ("https://attention", false),
-        ("notchgames:attention", false),
+        ("notchgames:attention", false)
     ])
     func recognisesTheAttentionURL(url: String, expected: Bool) throws {
         #expect(AttentionSignal.isRequest(try #require(URL(string: url))) == expected)
