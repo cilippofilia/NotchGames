@@ -12,7 +12,7 @@ import Testing
 @MainActor
 struct GallerySceneryTests {
     @Test func filledShapesGetAnOutlineAndAFill() throws {
-        let layers = GalleryScenery.pixelate(.countryside, margin: 0)
+        let layers = GalleryScenery.pixelate(.countryside)
         // The mountains are the one big shape: they must have both an outline and an inside.
         let mountains = try #require(layers.max { $0.fill.boundingRect.width < $1.fill.boundingRect.width })
         #expect(!mountains.edge.isEmpty)
@@ -20,12 +20,12 @@ struct GallerySceneryTests {
     }
 
     @Test func noneDrawsNothing() {
-        #expect(GalleryScenery.pixelate(.none, margin: 0).isEmpty)
+        #expect(GalleryScenery.pixelate(.none).isEmpty)
     }
 
     @Test(arguments: GalleryBackground.allCases.filter { $0 != .none })
     func everySceneDrawsAboveTheGround(_ background: GalleryBackground) {
-        let layers = GalleryScenery.pixelate(background, margin: 0.1)
+        let layers = GalleryScenery.pixelate(background)
         #expect(layers.contains { !$0.edge.isEmpty })
         for layer in layers {
             // A line pixel can straddle the ground.
@@ -34,10 +34,9 @@ struct GallerySceneryTests {
         }
     }
 
-    @Test func marginRunsTheSceneToThePanelEdges() {
-        let width = { (margin: Double) in
-            GalleryScenery.pixelate(.countryside, margin: margin).map(\.edge.boundingRect.width).max() ?? 0
-        }
-        #expect(width(0.2) > width(0) + 0.3)
+    @Test func sceneRunsPastTheCourtToThePanelEdges() {
+        let edges = GalleryScenery.pixelate(.countryside).map(\.edge.boundingRect)
+        // Real panels reach about 0.13 court units past each side of the court.
+        #expect(edges.contains { $0.minX < -0.13 && $0.maxX > GalleryModel.courtSize.width + 0.13 })
     }
 }

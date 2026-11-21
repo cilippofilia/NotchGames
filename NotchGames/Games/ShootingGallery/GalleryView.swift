@@ -26,7 +26,6 @@ struct GalleryView: View {
                 Self.draw(
                     game,
                     pointer: state.panelPointer,
-                    scenery: scenery,
                     at: timeline.date,
                     in: &context,
                     size: canvasSize
@@ -34,6 +33,12 @@ struct GalleryView: View {
             }
             .onChange(of: timeline.date) { _, date in
                 game.tick(now: date)
+            }
+        }
+        // Outside the timeline, so the still background redraws only when it or the panel size changes.
+        .background {
+            Canvas { context, canvasSize in
+                GalleryScenery.draw(scenery, in: CourtLayout.rect(in: canvasSize), context: &context)
             }
         }
         .contentShape(.rect)
@@ -89,21 +94,14 @@ struct GalleryView: View {
         }
         // Mid-round the crosshair is the pointer; it comes back for menus, pauses and the countdown.
         .pointerVisibility(display.isPlaying ? .hidden : .automatic)
-        .onGeometryChange(for: CGSize.self) { $0.size } action: { newSize in
-            size = newSize
-            redrawScenery()
-        }
-        .onChange(of: background) { redrawScenery() }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+        .onChange(of: background, initial: true) { scenery = GalleryScenery.pixelate(background) }
         .onChange(of: state.panelPointer) { _, pointer in
             game.pointerMoved(insidePanel: pointer.map { CGRect(origin: .zero, size: size).contains($0) })
         }
         .accessibilityElement()
         .accessibilityLabel("shooting gallery")
         .accessibilityValue("round \(display.round), score \(display.run.score), \(display.shotsLeft) shots left")
-    }
-
-    private func redrawScenery() {
-        scenery = GalleryScenery.pixelate(background, margin: GalleryScenery.margin(in: CourtLayout.rect(in: size)))
     }
 
     /// Panel points to court units (1.6 × 1, y down).
@@ -125,7 +123,6 @@ extension GalleryView {
     private static func draw(
         _ game: GalleryGame,
         pointer: CGPoint?,
-        scenery: [GalleryScenery.Layer],
         at date: Date,
         in context: inout GraphicsContext,
         size: CGSize
@@ -138,9 +135,7 @@ extension GalleryView {
             CGPoint(x: court.minX + point.x * scaleX, y: court.minY + point.y * scaleY)
         }
 
-        GalleryScenery.draw(scenery, in: court, context: &context)
-
-        // The ground runs to the panel's edges, past the court, so it meets the scenery.
+        // The ground runs to the panel's edges, past the court, so it meets the background.
         let groundY = place(CGPoint(x: 0, y: GalleryModel.groundY)).y
         var ground = Path()
         ground.move(to: CGPoint(x: 0, y: groundY))

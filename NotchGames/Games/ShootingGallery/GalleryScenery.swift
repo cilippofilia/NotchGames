@@ -25,16 +25,17 @@ enum GalleryScenery {
     /// The same size as one pixel of a duck.
     private static let pixel = GalleryModel.birdSize.width / Double(GallerySprites.bird[0][0].count)
 
-    /// How far past each side of the court the panel reaches, in court units (the court is centred).
-    static func margin(in court: CGRect) -> Double {
-        court.width > 0 ? court.minX / court.width * GalleryModel.courtSize.width : 0
-    }
+    /// How far past each side of the court the scene runs, in court units; the panel's edge clips the rest.
+    /// shortcut: fixed so resizing never re-pixelates; real panels need ~0.13,
+    /// raise it if a court ever gets narrower than ~130 pt.
+    private static let reach = 0.3
 
     /// A shape in court units, its color, and its fill strength (nil for a line, drawn all bright).
     private typealias Shape = (path: Path, color: Color, fill: Double?)
 
-    /// Slow (a contains-check per pixel per shape), so the view does it once per panel size or pick, not per frame.
-    static func pixelate(_ background: GalleryBackground, margin: Double) -> [Layer] {
+    /// Slow (a contains-check per pixel per shape), so the view does it once per pick, not per frame or resize.
+    static func pixelate(_ background: GalleryBackground) -> [Layer] {
+        let margin = reach
         let shapes: [Shape] = switch background {
         case .none: []
         case .countryside: countryside(margin: margin)
@@ -49,9 +50,11 @@ enum GalleryScenery {
     private static let thin = StrokeStyle(lineWidth: pixel)
 
     /// Props grow from where they stand, before stroking, so lines stay one pixel thick.
-    private static func grown(_ path: Path, from across: Double, _ down: Double = ground) -> Path {
+    private static func grown(_ path: Path, from across: Double) -> Path {
         path.applying(
-            CGAffineTransform(translationX: across, y: down).scaledBy(x: propScale, y: propScale).translatedBy(x: -across, y: -down)
+            CGAffineTransform(translationX: across, y: ground)
+                .scaledBy(x: propScale, y: propScale)
+                .translatedBy(x: -across, y: -ground)
         )
     }
 
@@ -217,9 +220,10 @@ enum GalleryScenery {
             .scaledBy(x: court.width / GalleryModel.courtSize.width, y: court.height / GalleryModel.courtSize.height)
         var canvas = context
         canvas.opacity = opacity
+        canvas.concatenate(toPanel)
         for layer in layers {
-            canvas.fill(layer.fill.applying(toPanel), with: .color(layer.color.opacity(layer.fillOpacity)))
-            canvas.fill(layer.edge.applying(toPanel), with: .color(layer.color.opacity(0.6)))
+            canvas.fill(layer.fill, with: .color(layer.color.opacity(layer.fillOpacity)))
+            canvas.fill(layer.edge, with: .color(layer.color.opacity(0.6)))
         }
     }
 
