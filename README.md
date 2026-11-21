@@ -48,6 +48,27 @@ Pick a game with the arrows on the title screen or in Settings.
 
 The app has no Dock icon and needs no Accessibility, Input Monitoring or Screen Recording permission.
 
+## Agent pings
+
+Coding agents and scripts can call you back from a game. Run:
+
+```sh
+open -g notchgames://attention
+```
+
+The notch glows (or, with the panel open, its outline pulses) until you move the pointer onto it. If the pointer is already on the panel mid-game, move it off and back on to clear the glow. `-g` keeps the terminal focused. With Reduce Motion on, the glow holds steady instead of pulsing. On a Mac without a notch, the glow only shows while the panel is open.
+
+For Claude Code, add hooks to `~/.claude/settings.json` so it pings when it needs your input or finishes:
+
+```json
+{
+  "hooks": {
+    "Notification": [{ "hooks": [{ "type": "command", "command": "open -g notchgames://attention" }] }],
+    "Stop": [{ "hooks": [{ "type": "command", "command": "open -g notchgames://attention" }] }]
+  }
+}
+```
+
 ## Settings
 
 Open Settings from the menu bar icon. The **General** tab picks the default game, the panel size, how far the pointer can stray before a game pauses (the gutter), and launch at login. Each game also has its own tab with its difficulty and your record or best score.
