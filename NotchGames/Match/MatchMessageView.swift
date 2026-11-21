@@ -13,8 +13,6 @@ struct MatchMessageView: View {
     let winner: PongSide?
     let isPaused: Bool
     let isCountingDown: Bool
-    /// The game can't resume until Settings closes, so the hint says so.
-    let isSettingsOpen: Bool
     /// Set when a score-based run has ended; shown instead of a winner.
     var runResult: RunResult?
     /// What brings a paused game back; Snake listens to keys, not the pointer.
@@ -56,11 +54,6 @@ struct MatchMessageView: View {
                     .padding()
             } else if isPaused || isCountingDown {
                 if isPaused {
-                    if isSettingsOpen {
-                        Text("close settings and")
-                            .font(.system(.headline, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                    }
                     Text(resumeHint)
                         .font(.system(.title, design: .monospaced))
                         .foregroundStyle(.secondary)
@@ -73,13 +66,13 @@ struct MatchMessageView: View {
 }
 
 #Preview("Paused") {
-    MatchMessageView(winner: nil, isPaused: true, isCountingDown: false, isSettingsOpen: true, onRestart: {})
+    MatchMessageView(winner: nil, isPaused: true, isCountingDown: false, onRestart: {})
         .frame(width: 480, height: 300)
         .background(Palette.background)
 }
 
 #Preview("Won") {
-    MatchMessageView(winner: .player, isPaused: false, isCountingDown: false, isSettingsOpen: false, onRestart: {})
+    MatchMessageView(winner: .player, isPaused: false, isCountingDown: false, onRestart: {})
         .frame(width: 480, height: 300)
         .background(Palette.background)
 }
@@ -89,7 +82,7 @@ struct MatchMessageView: View {
         winner: nil,
         isPaused: false,
         isCountingDown: false,
-        isSettingsOpen: false,
+       
         runResult: RunResult(score: 1240, best: 1240, isNewBest: true),
         onRestart: {}
     )

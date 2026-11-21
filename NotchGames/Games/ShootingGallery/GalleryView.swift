@@ -13,7 +13,9 @@ struct GalleryView: View {
     let state: PanelState
 
     @State private var game = GalleryGame()
+    @AppStorage(GalleryBackground.storageKey) private var background = GalleryBackground.standard
     @State private var size = CGSize.zero
+    @State private var scenery: [GalleryScenery.Layer] = []
     /// A press shoots once, on the way down; this waits for the release before the next.
     @State private var isPressing = false
 
@@ -21,7 +23,14 @@ struct GalleryView: View {
         let display = game.display
         TimelineView(.animation(paused: display.run.isPaused)) { timeline in
             Canvas { context, canvasSize in
-                Self.draw(game, pointer: state.panelPointer, at: timeline.date, in: &context, size: canvasSize)
+                Self.draw(
+                    game,
+                    pointer: state.panelPointer,
+                    scenery: scenery,
+                    at: timeline.date,
+                    in: &context,
+                    size: canvasSize
+                )
             }
             .onChange(of: timeline.date) { _, date in
                 game.tick(now: date)
@@ -66,7 +75,6 @@ struct GalleryView: View {
                         winner: nil,
                         isPaused: display.run.isPaused,
                         isCountingDown: display.run.countdownSeconds > 0,
-                        isSettingsOpen: state.isSettingsOpen,
                         runResult: display.run.isOver
                             ? RunResult(
                                 score: display.run.score,
@@ -81,13 +89,21 @@ struct GalleryView: View {
         }
         // Mid-round the crosshair is the pointer; it comes back for menus, pauses and the countdown.
         .pointerVisibility(display.isPlaying ? .hidden : .automatic)
-        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { newSize in
+            size = newSize
+            redrawScenery()
+        }
+        .onChange(of: background) { redrawScenery() }
         .onChange(of: state.panelPointer) { _, pointer in
             game.pointerMoved(insidePanel: pointer.map { CGRect(origin: .zero, size: size).contains($0) })
         }
         .accessibilityElement()
         .accessibilityLabel("shooting gallery")
         .accessibilityValue("round \(display.round), score \(display.run.score), \(display.shotsLeft) shots left")
+    }
+
+    private func redrawScenery() {
+        scenery = GalleryScenery.pixelate(background, margin: GalleryScenery.margin(in: CourtLayout.rect(in: size)))
     }
 
     /// Panel points to court units (1.6 × 1, y down).
@@ -109,6 +125,7 @@ extension GalleryView {
     private static func draw(
         _ game: GalleryGame,
         pointer: CGPoint?,
+        scenery: [GalleryScenery.Layer],
         at date: Date,
         in context: inout GraphicsContext,
         size: CGSize
@@ -121,9 +138,13 @@ extension GalleryView {
             CGPoint(x: court.minX + point.x * scaleX, y: court.minY + point.y * scaleY)
         }
 
+        GalleryScenery.draw(scenery, in: court, context: &context)
+
+        // The ground runs to the panel's edges, past the court, so it meets the scenery.
+        let groundY = place(CGPoint(x: 0, y: GalleryModel.groundY)).y
         var ground = Path()
-        ground.move(to: place(CGPoint(x: 0, y: GalleryModel.groundY)))
-        ground.addLine(to: place(CGPoint(x: GalleryModel.courtSize.width, y: GalleryModel.groundY)))
+        ground.move(to: CGPoint(x: 0, y: groundY))
+        ground.addLine(to: CGPoint(x: size.width, y: groundY))
         let groundLine = ground.strokedPath(StrokeStyle(lineWidth: 1.5))
         CourtEffects.glow(groundLine, color: Palette.paddle.opacity(0.5), in: &context)
 
@@ -147,7 +168,8 @@ extension GalleryView {
             context.stroke(ring, with: .color(Palette.paddle.opacity(0.6 * (1 - age))), lineWidth: 1.5)
         }
 
-        if let pointer, court.contains(pointer), !game.isPaused {
+        // Anywhere in the panel, not just the court: the system pointer is hidden over all of it mid-round.
+        if let pointer, !game.isPaused {
             drawCrosshair(at: pointer, context: &context)
         }
     }

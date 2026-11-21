@@ -48,7 +48,6 @@ struct AirHockeyView: View {
                     winner: game.display.winner,
                     isPaused: game.display.isPaused,
                     isCountingDown: game.display.countdownSeconds > 0,
-                    isSettingsOpen: state.isSettingsOpen,
                     streak: StatsStore.shared.stats.matchRecord(for: .airHockey).currentStreak,
                     onRestart: game.reset
                 )

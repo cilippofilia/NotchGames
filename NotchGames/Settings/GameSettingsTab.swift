@@ -14,6 +14,7 @@ struct GameSettingsTab: View {
 
     @AppStorage private var difficulty: Difficulty
     @AppStorage(SnakeGame.wallsStorageKey) private var snakeHasWalls = true
+    @AppStorage(GalleryBackground.storageKey) private var galleryBackground = GalleryBackground.standard
 
     init(game: GameKind) {
         self.game = game
@@ -38,6 +39,18 @@ struct GameSettingsTab: View {
                 Toggle(isOn: $snakeHasWalls) {
                     Text("walls")
                 }
+            }
+
+            if game == .shootingGallery {
+                Picker(selection: $galleryBackground) {
+                    ForEach(GalleryBackground.allCases) { background in
+                        Text(background.title).tag(background)
+                    }
+                } label: {
+                    Text("background")
+                    Text("the faint scene behind the ducks")
+                }
+                .pickerStyle(.menu)
             }
 
             StatsSection(store: StatsStore.shared, game: game)

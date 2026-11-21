@@ -56,7 +56,6 @@ struct SnakeView: View {
                     winner: nil,
                     isPaused: display.isPaused,
                     isCountingDown: display.countdownSeconds > 0,
-                    isSettingsOpen: state.isSettingsOpen,
                     runResult: display.isOver
                         ? RunResult(score: display.score, best: display.best, isNewBest: display.isNewBest)
                         : nil,
