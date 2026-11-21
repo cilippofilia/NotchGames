@@ -102,7 +102,6 @@ struct GalleryView: View {
 // MARK: - Drawing
 
 extension GalleryView {
-    private static let flashLength: TimeInterval = 0.08
     private static let missRingLength: TimeInterval = 0.35
 
     private static func draw(
@@ -118,12 +117,6 @@ extension GalleryView {
         let scaleY = court.height / GalleryModel.courtSize.height
         func place(_ point: CGPoint) -> CGPoint {
             CGPoint(x: court.minX + point.x * scaleX, y: court.minY + point.y * scaleY)
-        }
-
-        // The shot's flash lights the whole court for a moment.
-        if let shotTime = game.lastShotTime, date.timeIntervalSince(shotTime) < flashLength {
-            let fade = 1 - date.timeIntervalSince(shotTime) / flashLength
-            context.fill(Path(court), with: .color(Palette.paddle.opacity(0.12 * fade)))
         }
 
         var ground = Path()

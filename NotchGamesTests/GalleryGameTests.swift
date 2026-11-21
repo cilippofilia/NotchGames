@@ -43,7 +43,8 @@ struct GalleryGameTests {
         let game = GalleryGame(stats: try freshStats())
         game.pointerMoved(insidePanel: true)
         game.shoot(at: CGPoint(x: 0.8, y: 0.5), now: .now)
-        #expect(game.lastShotTime == nil)
+        #expect(game.lastHit == nil)
+        #expect(game.lastMiss == nil)
     }
 
     @Test func missingTheQuotaRecordsTheBest() throws {

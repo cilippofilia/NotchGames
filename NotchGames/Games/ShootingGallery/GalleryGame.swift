@@ -23,8 +23,6 @@ final class GalleryGame {
     private(set) var display = GalleryDisplay()
     /// The latest hit, for its spark (court units).
     @ObservationIgnored private(set) var lastHit: WallHit?
-    /// When the latest shot was fired, for its flash.
-    @ObservationIgnored private(set) var lastShotTime: Date?
     /// The latest miss, for the ring where it landed (court units).
     @ObservationIgnored private(set) var lastMiss: WallHit?
     @ObservationIgnored private let stats: StatsStore
@@ -54,7 +52,6 @@ final class GalleryGame {
         model = GalleryModel()
         clock = MatchClock()
         lastHit = nil
-        lastShotTime = nil
         lastMiss = nil
         isNewBest = false
         summary = nil
@@ -68,7 +65,6 @@ final class GalleryGame {
         let hit = model.shoot(at: point)
         // A click with no birds up (between pairs) isn't a shot.
         guard model.shotsLeft != shotsBefore else { return }
-        lastShotTime = now
         let event = WallHit(position: point, inward: CGVector(dx: 0, dy: -1), time: now)
         if hit {
             lastHit = event
