@@ -27,4 +27,6 @@ final class PanelState {
     var panelPointer: CGPoint?
     /// While the Settings window is open the game stays paused, even with the pointer over the panel.
     var isSettingsOpen = false
+    /// Set by an agent's ping; the notch or panel pulses while it's on.
+    var attention = AttentionSignal()
 }
