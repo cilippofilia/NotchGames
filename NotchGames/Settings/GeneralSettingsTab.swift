@@ -7,12 +7,14 @@
 
 import SwiftUI
 
-/// Settings for the panel and the app: which game opens, how big, how forgiving the pointer is, and login.
+/// Settings for the panel and the app: which game opens, how big, how forgiving the pointer is, login, and agent pings.
 struct GeneralSettingsTab: View {
     @AppStorage(GameKind.storageKey) private var game = GameKind.standard
     @AppStorage(PanelSize.storageKey) private var panelSize = PanelSize.standard
     @AppStorage(GutterSize.storageKey) private var gutter = GutterSize.standard
     @State private var launchesAtLogin = LoginItem.isEnabled
+    @AppStorage(AgentConnection.enabledKey) private var agentPings = true
+    private let connection = AgentConnection.shared
 
     var body: some View {
         Form {
@@ -52,7 +54,30 @@ struct GeneralSettingsTab: View {
                 // Show what macOS actually did, in case it refused.
                 launchesAtLogin = LoginItem.isEnabled
             }
+
+            Section {
+                if connection.isConnected {
+                    Toggle(isOn: $agentPings) {
+                        Text("claude code pings")
+                        Text("light up the notch when claude code needs you or finishes")
+                    }
+                    LabeledContent("remove the pings from claude code's settings") {
+                        Button("delete", role: .destructive, action: connection.disconnect)
+                    }
+                } else {
+                    LabeledContent {
+                        Button("connect", action: connection.connect)
+                    } label: {
+                        Text("claude code")
+                        Text("light up the notch when claude code needs you or finishes")
+                    }
+                }
+                if let problem = connection.problem {
+                    Text(problem).foregroundStyle(.red)
+                }
+            }
         }
+        .onAppear(perform: connection.refresh)
         .settingsTabLayout()
     }
 }
